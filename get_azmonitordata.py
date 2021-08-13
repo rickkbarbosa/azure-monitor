@@ -1,5 +1,6 @@
 #!/bin/env python
 #https://docs.microsoft.com/pt-br/python/api/overview/azure/monitoring?view=azure-python
+#https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-supported#microsoftkubernetesconnectedclusters
 import os
 from datetime import timedelta
 from datetime import datetime
