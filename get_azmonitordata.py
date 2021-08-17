@@ -133,9 +133,13 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric):
 def main():
     metrics_timerange()
     get_credentials()
-    if (options.az_metric_list != None):
+    if (options.az_metric_list != None or options.az_metrics != None ):
         #AZ Metrics
-        az_metrics_options = ''.join(str(e) for e in options.az_metric_list)
+        try:
+            az_metrics_options = ''.join(str(e) for e in options.az_metric_list)
+        except:
+            az_metrics_options = ''.join(str(e) for e in options.az_metrics)
+
         az_metrics_options = az_metrics_options.split(',')
         if len(az_metrics_options) <3:
                 print("USAGE: resource_name, resource_group, resource_type")
@@ -144,18 +148,12 @@ def main():
             resource_name = az_metrics_options[0]
             resource_group = az_metrics_options[1]
             resource_type = az_metrics_options[2]
+        
+        ''' When metric list ... '''
+        if (options.az_metric_list != None):
             azmonitor_available_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type)
-    if (options.az_metrics != None):
-        #AZ Metrics
-        az_metrics_options = ''.join(str(e) for e in options.az_metrics)
-        az_metrics_options = az_metrics_options.split(',')
-        if len(az_metrics_options) <4:
-                print("USAGE: resource_name, resource_group, resource_type, az_metrics")
-                sys.exit(1)
+        ''' When just getting a single value ... '''
         else:
-            resource_name = az_metrics_options[0]
-            resource_group = az_metrics_options[1]
-            resource_type = az_metrics_options[2]
             az_metric = az_metrics_options[3]
             result = get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric)
             print(result)
