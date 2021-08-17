@@ -144,7 +144,7 @@ def main():
             resource_name = az_metrics_options[0]
             resource_group = az_metrics_options[1]
             resource_type = az_metrics_options[2]
-            print(azmonitor_available_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type))            
+            azmonitor_available_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type)
     if (options.az_metrics != None):
         #AZ Metrics
         az_metrics_options = ''.join(str(e) for e in options.az_metrics)
@@ -157,7 +157,8 @@ def main():
             resource_group = az_metrics_options[1]
             resource_type = az_metrics_options[2]
             az_metric = az_metrics_options[3]
-            get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric)
+            result = get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric)
+            print(result)
 
 
 if __name__ == '__main__':
