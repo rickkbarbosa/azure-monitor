@@ -152,8 +152,8 @@ def main():
         ''' When metric list ... '''
         if (options.az_metric_list != None):
             azmonitor_available_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type)
-        ''' When just getting a single value ... '''
         else:
+            ''' When just getting a single value ... '''
             az_metric = az_metrics_options[3]
             result = get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric)
             print(result)
