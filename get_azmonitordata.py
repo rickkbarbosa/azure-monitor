@@ -1,36 +1,41 @@
 #!/bin/env python
+#===============================================================================
+# IDENTIFICATION DIVISION
+#        ID SVN:   $Id$
+#          FILE:  get_azmonitordata.py
+#         USAGE:  $0 
+#   DESCRIPTION:  Get Azure Monitor metrics data using python
+#       OPTIONS:  -M "name,resource_group_name,type,metric_name": List available metrics for a item
+#                 -m "name,resource_group_name,type,metric_name": Display Azure monitor metric value
+#                 AVAILABLE TYPES: AKS, APIM, VM
+#                 -G Groupname (Usually Client Name)
+#          BUGS:  ---
+#         NOTES:  ---
+#          TODO:  ---
+#        AUTHOR:  Ricardo Barbosa, rickkbarbosa@live.com
+#       COMPANY:  ---
+#       VERSION:  1.0
+#       CREATED:  2021-Ago-17 10:53 AM BRT
+#      REVISION:  ---
+#===============================================================================
+
+
 #https://docs.microsoft.com/pt-br/python/api/overview/azure/monitoring?view=azure-python
 #https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-supported#microsoftkubernetesconnectedclusters
-import os
-from datetime import timedelta
-from datetime import datetime
+import os, sys
+import argparse
+import datetime
 from azure.mgmt.monitor import MonitorManagementClient
 from azure.common.credentials import ServicePrincipalCredentials
 from statistics import mean,fmean
 
-az_tenant_id = os.environ['AZ_TENANT_ID']
-az_app_id = os.environ['AZ_APP_ID']
-az_password = os.environ['AZ_APP_PASSWORD']
 
-subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
+parser = argparse.ArgumentParser()
+parser.add_argument("-M", "--metric-list", dest="az_metric_list", nargs=1, help="List available metrics for a resource")
+parser.add_argument("-m", "--metric", dest="az_metrics", nargs=1, help="Get metrics for a resource")
+parser.allow_interspersed_args = False
+(options, args) = parser.parse_known_args()
 
-resource_group_name = os.environ['AZ_RESOURCE_GROUP']
-resource_name = os.environ['AZ_RESOURCE_NAME']
-
-resource_type = os.environ['AZ_RESOURCE_TYPE']
-
-''' Starting credential login '''
-credentials = ServicePrincipalCredentials(
-    client_id = az_app_id,
-    secret = az_password,
-    tenant = az_tenant_id
-)
-
-#Conection itself
-client = MonitorManagementClient(
-    credentials,
-    subscription_id
-)
 
 ''' Setting the right resource type '''
 resource_type_list = {}
@@ -38,43 +43,122 @@ resource_type_list['AKS'] = "Microsoft.ContainerService/managedClusters"
 resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"
 
-''' Identify the item '''
-resource_id = (
-    "subscriptions/{}/"
-    "resourceGroups/{}/"
-    "providers/{}/{}"
-).format(subscription_id, resource_group_name, resource_type_list[resource_type],  resource_name)
+
+def get_credentials():
+    az_tenant_id = os.environ['AZ_TENANT_ID']
+    az_app_id = os.environ['AZ_APP_ID']
+    az_password = os.environ['AZ_APP_PASSWORD']
+    
+    global subscription_id
+    subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
+    
+    ''' Starting credential login '''
+    credentials = ServicePrincipalCredentials(
+        client_id = az_app_id,
+        secret = az_password,
+        tenant = az_tenant_id
+    )
+
+    #Conection itself
+    global client
+    client = MonitorManagementClient(
+        credentials,
+        subscription_id
+    )
+
+    return client, subscription_id
 
 
-endtime = datetime.utcnow()
-starttime = datetime.utcnow() - timedelta(minutes=2) 
+''' Define timerange'''
+''' minutes is keep as 5, but you could need different time ranges '''
+def metrics_timerange(minutes=5):
 
-def azmonitor_available_metrics():
+    global timeto 
+    global timetill
+
+    timetill = datetime.datetime.utcnow()
+    timeto = timetill - datetime.timedelta(minutes=minutes)
+
+    return timeto, timetill
+
+
+#List wich metrics is available for a Azure resource
+def azmonitor_available_metrics(resource_name, resource_group, resource_type):
+    ''' Identify the item '''
+    resource_id = (
+        "subscriptions/{}/"
+        "resourceGroups/{}/"
+        "providers/{}/{}"
+    ).format(subscription_id, resource_group, resource_type_list[resource_type],  resource_name)
+
     for metric in client.metric_definitions.list(resource_id):
-        # azure.monitor.models.MetricDefinition
         print("{}: id={}, unit={}".format(
             metric.name.localized_value,
             metric.name.value,
             metric.unit
         ))
 
-metrics_data = client.metrics.list(
-    resource_id,
-    timespan="{}/{}".format(starttime, endtime),
-    interval='PT1M',
-    metricnames='kube_pod_status_ready',
-    aggregation='Total'
-)
 
-# for item in metrics_data.value:
-#    print("{} ({})".format(item.name.localized_value, item.unit.name))
-#    for timeserie in item.timeseries:
-#        for data in timeserie.data:
-#            print("{}: {}".format(data.time_stamp, data.total))
+def get_az_metrics(resource_name, resource_group, resource_type, az_metric):
+    ''' Identify the item '''
+    resource_id = (
+        "subscriptions/{}/"
+        "resourceGroups/{}/"
+        "providers/{}/{}"
+    ).format(subscription_id, resource_group, resource_type_list[resource_type],  resource_name)
 
-#metrics_data.value[0].timeseries[0].data[1].total
+    metrics_data = client.metrics.list(
+        resource_id,
+        timespan="{}/{}".format(timeto, timetill),
+        interval='PT1M',
+        metricnames=az_metric,
+        aggregation='Total'
+    )
 
-metrics_data = metrics_data.value[0]
-x = fmean(x.total for x in metrics_data.timeseries[0].data)
+    # for item in metrics_data.value:
+    #    print("{} ({})".format(item.name.localized_value, item.unit.name))
+    #    for timeserie in item.timeseries:
+    #        for data in timeserie.data:
+    #            print("{}: {}".format(data.time_stamp, data.total))
 
-print(x)
+    #metrics_data.value[0].timeseries[0].data[1].total
+
+    metrics_data = metrics_data.value[0]
+    metrics_data = fmean(x.total for x in metrics_data.timeseries[0].data)
+
+    return metrics_data
+
+
+''' For menu '''
+def main():
+    metrics_timerange()
+    get_credentials()
+    if (options.az_metric_list != None):
+        #AZ Metrics
+        az_metrics_options = ''.join(str(e) for e in options.az_metric_list)
+        az_metrics_options = az_metrics_options.split(',')
+        if len(az_metrics_options) <3:
+                print("USAGE: resource_name, resource_group, resource_type")
+                sys.exit(1)
+        else:
+            resource_name = az_metrics_options[0]
+            resource_group = az_metrics_options[1]
+            resource_type = az_metrics_options[2]
+            print(azmonitor_available_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type))            
+    if (options.az_metrics != None):
+        #AZ Metrics
+        az_metrics_options = ''.join(str(e) for e in options.az_metrics)
+        az_metrics_options = az_metrics_options.split(',')
+        if len(az_metrics_options) <4:
+                print("USAGE: resource_name, resource_group, resource_type, az_metrics")
+                sys.exit(1)
+        else:
+            resource_name = az_metrics_options[0]
+            resource_group = az_metrics_options[1]
+            resource_type = az_metrics_options[2]
+            az_metric = az_metrics_options[3]
+            get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric)
+
+
+if __name__ == '__main__':
+    main()
