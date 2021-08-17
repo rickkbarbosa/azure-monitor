@@ -1,3 +1,6 @@
+#To Monitor
 azure-mgmt-monitor
-azure.monitor
+#To list resources
+azure-mgmt-resource
+azure-identity
 ipython

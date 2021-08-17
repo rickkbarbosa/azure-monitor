@@ -6,6 +6,7 @@ from datetime import timedelta
 from datetime import datetime
 from azure.mgmt.monitor import MonitorManagementClient
 from azure.common.credentials import ServicePrincipalCredentials
+from statistics import mean,fmean
 
 az_tenant_id = os.environ['AZ_TENANT_ID']
 az_app_id = os.environ['AZ_APP_ID']
@@ -34,6 +35,7 @@ client = MonitorManagementClient(
 ''' Setting the right resource type '''
 resource_type_list = {}
 resource_type_list['AKS'] = "Microsoft.ContainerService/managedClusters"
+resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"
 
 ''' Identify the item '''
@@ -64,8 +66,15 @@ metrics_data = client.metrics.list(
     aggregation='Total'
 )
 
-for item in metrics_data.value:
-   print("{} ({})".format(item.name.localized_value, item.unit.name))
-   for timeserie in item.timeseries:
-       for data in timeserie.data:
-           print("{}: {}".format(data.time_stamp, data.total))
+# for item in metrics_data.value:
+#    print("{} ({})".format(item.name.localized_value, item.unit.name))
+#    for timeserie in item.timeseries:
+#        for data in timeserie.data:
+#            print("{}: {}".format(data.time_stamp, data.total))
+
+#metrics_data.value[0].timeseries[0].data[1].total
+
+metrics_data = metrics_data.value[0]
+x = fmean(x.total for x in metrics_data.timeseries[0].data)
+
+print(x)
