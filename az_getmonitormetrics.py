@@ -1,14 +1,14 @@
-#!/bin/env python
+#!/bin/python3
 #===============================================================================
 # IDENTIFICATION DIVISION
 #        ID SVN:   $Id$
 #          FILE:  get_azmonitordata.py
 #         USAGE:  $0 
 #   DESCRIPTION:  Get Azure Monitor metrics data using python
+#                 -C "tenant_id,app_id,app_password,subscription_id": Send AZ credentials [unecessary when using environment variables]
 #       OPTIONS:  -M "name,resource_group_name,type,metric_name": List available metrics for a item
 #                 -m "name,resource_group_name,type,metric_name": Display Azure monitor metric value
 #                 AVAILABLE TYPES: AKS, APIM, VM
-#                 -G Groupname (Usually Client Name)
 #          BUGS:  ---
 #         NOTES:  ---
 #          TODO:  ---
@@ -31,11 +31,11 @@ from statistics import mean,fmean
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help="Declare AZ credentials [tenant_id,app_id,app_password,subscription_id]")
 parser.add_argument("-M", "--metric-list", dest="az_metric_list", nargs=1, help="List available metrics for a resource")
 parser.add_argument("-m", "--metric", dest="az_metrics", nargs=1, help="Get metrics for a resource")
 parser.allow_interspersed_args = False
 (options, args) = parser.parse_known_args()
-
 
 ''' Setting the right resource type '''
 resource_type_list = {}
@@ -44,13 +44,16 @@ resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"
 
 
-def get_credentials():
-    az_tenant_id = os.environ['AZ_TENANT_ID']
-    az_app_id = os.environ['AZ_APP_ID']
-    az_password = os.environ['AZ_APP_PASSWORD']
+def get_credentials(az_tenant_id=None,az_app_id=None,az_password=None,subscription_id=None):
     
-    global subscription_id
-    subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
+    ''' If -C has not used on script - Script will consider environment variables '''
+    if az_tenant_id is None:
+        az_tenant_id = os.environ['AZ_TENANT_ID']
+        az_app_id = os.environ['AZ_APP_ID']
+        az_password = os.environ['AZ_APP_PASSWORD']
+        subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
+    else:
+        subscription_id = subscription_id
     
     ''' Starting credential login '''
     credentials = ServicePrincipalCredentials(
@@ -99,7 +102,7 @@ def azmonitor_available_metrics(resource_name, resource_group, resource_type):
         ))
 
 
-def get_az_metrics(resource_name, resource_group, resource_type, az_metric):
+def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metric_aggregation):
     ''' Identify the item '''
     resource_id = (
         "subscriptions/{}/"
@@ -107,12 +110,14 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric):
         "providers/{}/{}"
     ).format(subscription_id, resource_group, resource_type_list[resource_type],  resource_name)
 
+    ''' Aggregations: Total, Sum, Count, Minimum, Maximum, Average'''
+    ''' https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-aggregation-explained '''
     metrics_data = client.metrics.list(
         resource_id,
         timespan="{}/{}".format(timeto, timetill),
         interval='PT1M',
         metricnames=az_metric,
-        aggregation='Total'
+        aggregation=metric_aggregation.capitalize()
     )
 
     # for item in metrics_data.value:
@@ -123,16 +128,20 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric):
 
     #metrics_data.value[0].timeseries[0].data[1].total
 
+    ''' Adjustment to print the right aggregation selected '''
+    aggregation_name= str("x." + metric_aggregation.lower())
     metrics_data = metrics_data.value[0]
-    metrics_data = fmean(x.total for x in metrics_data.timeseries[0].data)
+    try:
+        metrics_data = fmean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+    except:
+        metrics_data = mean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
 
     return metrics_data
-
 
 ''' For menu '''
 def main():
     metrics_timerange()
-    get_credentials()
+    #get_credentials()
     if (options.az_metric_list != None or options.az_metrics != None ):
         #AZ Metrics
         try:
@@ -155,9 +164,22 @@ def main():
         else:
             ''' When just getting a single value ... '''
             az_metric = az_metrics_options[3]
-            result = get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric)
+            az_metric_aggregation = az_metrics_options[4]
+            result = get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric, metric_aggregation=az_metric_aggregation)
             print(result)
 
 
+
+
 if __name__ == '__main__':
+    ''' Invoke credentials based on AZ Service Principal. Default is try to get system environment '''
+    if (options.az_credentials != None):
+        az_credentials_options = ''.join(str(e) for e in options.az_credentials)
+        tenant_id,app_id,app_password,subscription_id = az_credentials_options.split(',')
+        get_credentials(az_tenant_id=tenant_id,az_app_id=app_id,
+                        az_password=app_password,subscription_id=subscription_id)
+    else:
+        subscription_id=os.environ['AZ_SUBSCRIPTION_ID']
+        get_credentials(subscription_id=subscription_id)
+    ''' Open the party '''
     main()

@@ -1,5 +1,6 @@
 #To Monitor
 azure-mgmt-monitor
+msrestazure
 #To list resources
 azure-mgmt-resource
 azure-identity
