@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/bin/env python
 #===============================================================================
 # IDENTIFICATION DIVISION
 #        ID SVN:   $Id$
@@ -44,17 +44,13 @@ resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"
 
 
-def get_credentials(az_tenant_id=None,az_app_id=None,az_password=None,subscription_id=None):
+def get_credentials(credentials):
     
-    ''' If -C has not used on script - Script will consider environment variables '''
-    if az_tenant_id is None:
-        az_tenant_id = os.environ['AZ_TENANT_ID']
-        az_app_id = os.environ['AZ_APP_ID']
-        az_password = os.environ['AZ_APP_PASSWORD']
-        subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
-    else:
-        subscription_id = subscription_id
-    
+    az_tenant_id = credentials[0]
+    az_app_id = credentials[1]
+    az_password = credentials[2]
+    subscription_id = credentials[3]
+
     ''' Starting credential login '''
     credentials = ServicePrincipalCredentials(
         client_id = az_app_id,
@@ -139,9 +135,9 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     return metrics_data
 
 ''' For menu '''
-def main():
+def main(credentials):
     metrics_timerange()
-    #get_credentials()
+    get_credentials(credentials=credentials)
     if (options.az_metric_list != None or options.az_metrics != None ):
         #AZ Metrics
         try:
@@ -172,14 +168,18 @@ def main():
 
 
 if __name__ == '__main__':
-    ''' Invoke credentials based on AZ Service Principal. Default is try to get system environment '''
+    global subscription_id
+
+    #''' Invoke credentials based on AZ Service Principal. Default is try to get system environment '''
     if (options.az_credentials != None):
         az_credentials_options = ''.join(str(e) for e in options.az_credentials)
-        tenant_id,app_id,app_password,subscription_id = az_credentials_options.split(',')
-        get_credentials(az_tenant_id=tenant_id,az_app_id=app_id,
-                        az_password=app_password,subscription_id=subscription_id)
+        credentials = az_credentials_options.split(',')
+        subscription_id = credentials[3]
     else:
-        subscription_id=os.environ['AZ_SUBSCRIPTION_ID']
-        get_credentials(subscription_id=subscription_id)
+        az_tenant_id = os.environ['AZ_TENANT_ID']
+        az_app_id = os.environ['AZ_APP_ID']
+        az_password = os.environ['AZ_APP_PASSWORD']
+        subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
+        credentials = az_tenant_id, az_app_id, az_password, subscription_id
     ''' Open the party '''
-    main()
+    main(credentials=credentials)
