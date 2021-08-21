@@ -58,6 +58,13 @@ _aggregation_ : metric aggregation, depends of metric
 * total: Gets all values in a timerange, and sums it.
 * average: presents a mean value in the timerange.
 
+SPECIFIC TIMERANGES (default is 5)
+
+Use the  option _-t_ to define a custom time minute range, in minutes. Example:
+
+```
+./az_getmonitormetrics.py -m "cclient-aks-prod,resourcegroup_name,AKS,node_disk_usage_bytes,average" -t 10
+```
 
 
 TODO:
@@ -65,4 +72,4 @@ TODO:
 * Aggregate others Azure components [in the list](https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported)
 * Improve the aggregations calc (mean, fmean, sum...)
 * AKS: Split metrics by nodes (e.g: node memory, presenting each node separated)
-* Include an option in order to input custom  timeranges
+* Discover components [E.G: Virtual Machines](https://stackoverflow.com/questions/58925397/how-could-i-list-azure-virtual-machines-using-python)

@@ -34,6 +34,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help="Declare AZ credentials [tenant_id,app_id,app_password,subscription_id]")
 parser.add_argument("-M", "--metric-list", dest="az_metric_list", nargs=1, help="List available metrics for a resource")
 parser.add_argument("-m", "--metric", dest="az_metrics", nargs=1, help="Get metrics for a resource")
+parser.add_argument("-t", "--timerange", dest="az_timerange", nargs=1, help="range to be get [in minutes]")
 parser.allow_interspersed_args = False
 (options, args) = parser.parse_known_args()
 
@@ -137,6 +138,7 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     metrics_data = metrics_data.value[0]
 
     ''' Metrics involving API Management looks better using sum instead mean '''
+    # try:
     if ( resource_type == "APIM" or resource_type == "ADF" ):
         metrics_data = sum(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
     else:
@@ -144,12 +146,21 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
             metrics_data = fmean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
         except:
             metrics_data = mean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+    # except:
+    #     metrics_data = 0
 
     return metrics_data
 
 ''' For menu '''
 def main(credentials):
-    metrics_timerange()
+    ''' Limit timerange - default is 60 seconds'''
+    if (options.az_timerange != None ):
+        timerange = ''.join(str(e) for e in options.az_timerange)
+        timerange = int(timerange)
+        metrics_timerange(minutes=timerange)
+    else:
+        metrics_timerange()
+
     get_credentials(credentials=credentials)
     if (options.az_metric_list != None or options.az_metrics != None ):
         #AZ Metrics
