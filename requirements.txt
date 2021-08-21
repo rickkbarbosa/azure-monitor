@@ -5,3 +5,4 @@ msrestazure
 azure-mgmt-resource
 azure-identity
 azure-mgmt==4.0.0
+azure-mgmt-datafactory 

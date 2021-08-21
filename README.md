@@ -31,3 +31,36 @@ export AZ_SUBSCRIPTION_ID="something"
 
 #List AZ Resource Groups
 #az group list --output table
+
+
+# USAGE:
+
+To discover Available Metrics for a Azure product:
+```
+get_azmonitordata.py -M "name,resource_group_name,type"
+```
+
+To get AZ Metric values:
+```
+get_azmonitordata.py -m "name,resource_group_name,type,metric_name,aggregation"
+``` 
+
+_type_: Azure Components granted by this script. :
+
+* AKS: Azure Kubernetes Services
+* ADF: Data Factory
+* APIM: API Management
+* VM: Virtual Machines
+
+
+_aggregation_ : metric aggregation, depends of metric
+
+* total: Gets all values in a timerange, and sums it.
+* average: presents a mean value in the timerange.
+
+
+
+#                 -C "tenant_id,app_id,app_password,subscription_id": Send AZ credentials [unecessary when using environment variables]
+#       OPTIONS:  -M "name,resource_group_name,type,metric_name": List available metrics for a item
+#                 -m "name,resource_group_name,type,metric_name": Display Azure monitor metric value
+#                 AVAILABLE TYPES: AKS, APIM, VM

@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bin/python3
 #===============================================================================
 # IDENTIFICATION DIVISION
 #        ID SVN:   $Id$
@@ -39,10 +39,10 @@ parser.allow_interspersed_args = False
 
 ''' Setting the right resource type '''
 resource_type_list = {}
-resource_type_list['AKS'] = "Microsoft.ContainerService/managedClusters"
-resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"
-resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"
-
+resource_type_list['AKS'] = "Microsoft.ContainerService/managedClusters"    #Kubernetes
+resource_type_list['ADF'] = "Microsoft.DataFactory/factories"             #DataFactory
+resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"             #APIManagement
+resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"              #VM
 
 def get_credentials(credentials):
     
@@ -108,10 +108,18 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
 
     ''' Aggregations: Total, Sum, Count, Minimum, Maximum, Average'''
     ''' https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-aggregation-explained '''
+
+    ''' Providing different timerange when monitoring DataFactories '''
+    if ( resource_type == "ADF" ):
+        metrics_timerange(minutes=60)                      #Every 6 hours
+        default_interval = "PT1H"
+    else:
+        default_interval = "PT1M"
+
     metrics_data = client.metrics.list(
         resource_id,
         timespan="{}/{}".format(timeto, timetill),
-        interval='PT1M',
+        interval=default_interval,
         metricnames=az_metric,
         aggregation=metric_aggregation.capitalize()
     )
@@ -129,7 +137,7 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     metrics_data = metrics_data.value[0]
 
     ''' Metrics involving API Management looks better using sum instead mean '''
-    if ( resource_type == "APIM" ):
+    if ( resource_type == "APIM" or resource_type == "ADF" ):
         metrics_data = sum(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
     else:
         try:
