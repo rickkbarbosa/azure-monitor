@@ -64,4 +64,5 @@ TODO:
 
 * Aggregate others Azure components [in the list](https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported)
 * Improve the aggregations calc (mean, fmean, sum...)
+* AKS: Split metrics by nodes (e.g: node memory, presenting each node separated)
 * Include an option in order to input custom  timeranges
