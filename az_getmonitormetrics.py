@@ -127,10 +127,15 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     ''' Adjustment to print the right aggregation selected '''
     aggregation_name= str("x." + metric_aggregation.lower())
     metrics_data = metrics_data.value[0]
-    try:
-        metrics_data = fmean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
-    except:
-        metrics_data = mean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+
+    ''' Metrics involving API Management looks better using sum instead mean '''
+    if ( resource_type == "APIM" ):
+        metrics_data = sum(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+    else:
+        try:
+            metrics_data = fmean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+        except:
+            metrics_data = mean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
 
     return metrics_data
 
