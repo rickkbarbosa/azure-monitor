@@ -60,7 +60,8 @@ _aggregation_ : metric aggregation, depends of metric
 
 
 
-#                 -C "tenant_id,app_id,app_password,subscription_id": Send AZ credentials [unecessary when using environment variables]
-#       OPTIONS:  -M "name,resource_group_name,type,metric_name": List available metrics for a item
-#                 -m "name,resource_group_name,type,metric_name": Display Azure monitor metric value
-#                 AVAILABLE TYPES: AKS, APIM, VM
+TODO:
+
+* Aggregate others Azure components [in the list](https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported)
+* Improve the aggregations calc (mean, fmean, sum...)
+* Include an option in order to input custom  timeranges
