@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-08-23T22:36:53Z'
+  date: '2021-08-23T22:43:13Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -36,6 +36,8 @@ zabbix_export:
               type: EXTERNAL
               key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_APP_PASSWORD}:{#AZ_CONNECTION_RESOURCEGROUP}","-s","{#AZ_CONNECTION_NAME}"]'
               history: 7d
+              valuemap:
+                name: 'Azure Connection Status'
               preprocessing:
                 -
                   type: REGEX
@@ -178,6 +180,17 @@ zabbix_export:
           macro: '{$AZURE_CLIENTNAME}'
           value: ClientName
           description: 'Client Name. Discover purposes'
+      valuemaps:
+        -
+          uuid: 94c59759897942ef84a0a69323cddf44
+          name: 'Azure Connection Status'
+          mappings:
+            -
+              value: '0'
+              newvalue: Disconnected
+            -
+              value: '1'
+              newvalue: Connected
     -
       uuid: 3cf597a0794d42ef8997bf933cd51b63
       template: 'Template - Azure AKS'
