@@ -44,6 +44,7 @@ resource_type_list['AKS'] = "Microsoft.ContainerService/managedClusters"    #Kub
 resource_type_list['ADF'] = "Microsoft.DataFactory/factories"             #DataFactory
 resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"             #APIManagement
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"              #VM
+resource_type_list['WEB'] =  "Microsoft.Web/sites"                           #WebApp
 
 def get_credentials(credentials):
     

@@ -30,15 +30,11 @@ import json
 parser = argparse.ArgumentParser()
 parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help="Declare AZ credentials [tenant_id,app_id,app_password,subscription_id]")
 parser.add_argument("-G", "--groupname", dest="groupname", help="Maas Groupname")
+parser.add_argument("--virtualmachine", dest="az_vm", help="List VMs", action="store_true")
+parser.add_argument("--datafactory", dest="az_datafactory", help="List DataFactory", action="store_true")
+parser.add_argument("--webapp", dest="az_webapp", help="WebApp", action="store_true")
 parser.allow_interspersed_args = False
 (options, args) = parser.parse_known_args()
-
-''' Setting the right resource type '''
-resource_type_list = {}
-resource_type_list['AKS'] = "Microsoft.ContainerService/managedClusters"    #Kubernetes
-resource_type_list['ADF'] = "Microsoft.DataFactory/factories"             #DataFactory
-resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"             #APIManagement
-resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"              #VM
 
 def get_credentials(credentials):
     
@@ -64,43 +60,76 @@ def get_credentials(credentials):
 #List wich metrics is available for a Azure resource
 def azure_vm_list():
     from azure.mgmt.compute import ComputeManagementClient
- 
-    compute_client = ComputeManagementClient(conn, subscription_id)
-
-    discover_result = compute_client.virtual_machines.list_all()
-    #print(vm_list)
-    vm_list = list()
     
-    for vm in discover_result:
-        vm_details = vm.id.split("/")
+    compute_client = ComputeManagementClient(conn, subscription_id)
+    discover_result = compute_client.virtual_machines.list_all()
 
-        # ''' Getting VM State'''
-        # try:
-        #     vm_state = compute_client.virtual_machines.instance_view(vm_details[4], vm_details[8]).statuses
-        #     vm_state = len(vm_state) >= 2 and vm_state[1]
-        #     vm_state = vm_state.code.split("/")[1]
-        # except:
-        #     vm_state = "undefined"
-        
-        vm_detail = {'{#AZ_VM_NAME}': vm_details[8],
-        #               '{#AZ_STATUS}': vm_state,
-                        '{#AZ_VM_RESOURCEGROUP}': vm_details[4],
-                        '{#AZ_VMSUBSCRIPTIONS}': vm_details[2],
+    vm_list = list() 
+    for vm in discover_result:
+        details = vm.id.split("/")
+      
+        vm_detail = {'{#AZ_VM_NAME}': details[8],
+                        '{#AZ_VM_RESOURCEGROUP}': details[4],
+                        '{#AZ_VM_SUBSCRIPTIONS}': details[2],
                         '{#AZ_VM_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         vm_list.append(vm_detail)
   
     print(json.dumps({"data": vm_list}, indent=4))
 
+def azure_df_list():
+    from azure.mgmt.datafactory import DataFactoryManagementClient
+    
+    compute_client = DataFactoryManagementClient(conn, subscription_id)
+    discover_result = compute_client.factories.list()
+    
+    df_list = list()
+    for df in discover_result:
+        details = df.id.split("/")
+      
+        vm_detail = {'{#AZ_ADF_NAME}': details[8],
+                        '{#AZ_ADF_RESOURCEGROUP}': details[4],
+                        '{#AZ_ADF_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_ADF_GROUPNAME}': "{} - Azure".format(options.groupname)
+                        }
+        df_list.append(vm_detail)
+  
+    print(json.dumps({"data": df_list}, indent=4))
+
+def azure_webapp_list():
+    from azure.mgmt.web import WebSiteManagementClient
+    
+    compute_client = WebSiteManagementClient(conn, subscription_id)
+    discover_result = compute_client.web_apps.list()
+    
+    webapp_list = list()
+    for web in discover_result:
+        details = web.id.split("/")
+      
+        vm_detail = {'{#AZ_WEBAPP_NAME}': details[8],
+                        '{#AZ_WEBAPP_RESOURCEGROUP}': details[4],
+                        '{#AZ_WEBAPP_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_WEBAPP_GROUPNAME}': "{} - Azure".format(options.groupname)
+                        }
+        webapp_list.append(vm_detail)
+  
+    print(json.dumps({"data": webapp_list}, indent=4))
 
 ''' For menu '''
 def main(credentials):
     get_credentials(credentials=credentials)
-    azure_vm_list()
 
     if (options.groupname == None):
         options.groupname = 'Discovered Hosts'
 
+    if (options.az_datafactory):
+        azure_df_list()
+    
+    if (options.az_vm):
+        azure_vm_list()
+
+    if (options.az_webapp):
+        azure_webapp_list()
 
 if __name__ == '__main__':
     global subscription_id
