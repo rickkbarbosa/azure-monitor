@@ -33,6 +33,7 @@ import json
 parser = argparse.ArgumentParser()
 parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help="Declare AZ credentials [tenant_id,app_id,app_password,subscription_id]")
 parser.add_argument("-G", "--groupname", dest="groupname", help="Maas Groupname")
+parser.add_argument("--connections", dest="az_connections", help="VPN Connections", action="store_true")
 parser.add_argument("--virtualmachine", dest="az_vm", help="List VMs", action="store_true")
 parser.add_argument("--datafactory", dest="az_datafactory", help="List DataFactory", action="store_true")
 parser.add_argument("--sql", dest="az_sql", help="SQL Servers", action="store_true")
@@ -162,6 +163,32 @@ def azure_databases_list(instance_name, resource_group):
   
     print(json.dumps({"data": db_list}, indent=4))
     
+def azure_connection_list():
+    from azure.mgmt.resource import ResourceManagementClient
+    from azure.mgmt.network import NetworkManagementClient
+    
+    ''' First, list the resource groups'''
+    rg_client = ResourceManagementClient(conn, subscription_id)
+    compute_client = NetworkManagementClient(conn, subscription_id)
+
+    rg_result = rg_client.resource_groups.list()
+    connection_list = list()
+
+    for rg in rg_result:
+        rg_name = rg.id.split("/")[4]
+
+        ''' Then, start a conection research, once per resource group '''
+        discover_result = compute_client.virtual_network_gateway_connections.list(resource_group_name=rg_name)
+        for connection in discover_result:
+            details = connection.id.split("/")
+        
+            vm_detail = {'{#AZ_CONNECTION_NAME}': details[8],
+                            '{#AZ_CONNECTION_RESOURCEGROUP}': details[4],
+                            '{#AZ_CONNECTION_SUBSCRIPTIONS}': details[2],
+                            }
+            connection_list.append(vm_detail)
+  
+    print(json.dumps({"data": connection_list}, indent=4))
 
 ''' For menu '''
 def main(credentials):
@@ -173,6 +200,9 @@ def main(credentials):
     if (options.az_datafactory):
         azure_df_list()
     
+    if (options.az_connections):
+        azure_connection_list()
+
     if (options.az_vm):
         azure_vm_list()
 
