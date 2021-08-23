@@ -6,9 +6,12 @@
 #         USAGE:  $0 
 #   DESCRIPTION:  List in JSON-file Azure components
 #                 -C "tenant_id,app_id,app_password,subscription_id": Send AZ credentials [unecessary when using environment variables]
-#       OPTIONS:  -M "name,resource_group_name,type,metric_name": List available metrics for a item
-#                 -m "name,resource_group_name,type,metric_name": Display Azure monitor metric value
-#                 -G Groupname (Usually Client Name). For inventary purposes
+#       OPTIONS:  -G Groupname (Usually Client Name). For inventary purposes
+#                 --virtualmachine : List VMs
+#                 --datafactory
+#                 --sql : List Database Servers
+#                 --database "databaseserver_name,resource_group" : List all databases inside a specific database server
+#                 --webapp: List all App Servers
 #                 AVAILABLE TYPES: AKS, APIM, VM
 #          BUGS:  ---
 #         NOTES:  ---
