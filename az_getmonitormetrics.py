@@ -45,6 +45,9 @@ resource_type_list['ADF'] = "Microsoft.DataFactory/factories"             #DataF
 resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"             #APIManagement
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"              #VM
 resource_type_list['WEB'] =  "Microsoft.Web/sites"                           #WebApp
+resource_type_list['DATABRICKS'] =  "Microsoft.Databricks/workspaces"                           #Databricks/Workspaces
+resource_type_list['SQL'] =  "Microsoft.Sql/servers"
+
 
 def get_credentials(credentials):
     
@@ -140,7 +143,8 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
 
     ''' Metrics involving API Management looks better using sum instead mean '''
     # try:
-    if ( resource_type == "APIM" or resource_type == "ADF" ):
+    #if ( resource_type == "APIM" or resource_type == "ADF" ):
+    if ( metric_aggregation.lower() == "total" or metric_aggregation.lower() == "count" ):
         metrics_data = sum(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
     else:
         try:

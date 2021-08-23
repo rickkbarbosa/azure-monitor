@@ -32,7 +32,10 @@ parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help=
 parser.add_argument("-G", "--groupname", dest="groupname", help="Maas Groupname")
 parser.add_argument("--virtualmachine", dest="az_vm", help="List VMs", action="store_true")
 parser.add_argument("--datafactory", dest="az_datafactory", help="List DataFactory", action="store_true")
+parser.add_argument("--sql", dest="az_sql", help="SQL Servers", action="store_true")
+parser.add_argument("--database", dest="az_databases", help="SQL Databases")
 parser.add_argument("--webapp", dest="az_webapp", help="WebApp", action="store_true")
+
 parser.allow_interspersed_args = False
 (options, args) = parser.parse_known_args()
 
@@ -115,6 +118,48 @@ def azure_webapp_list():
   
     print(json.dumps({"data": webapp_list}, indent=4))
 
+def azure_sql_instances_list():
+    from azure.mgmt.sql import SqlManagementClient
+    
+    compute_client = SqlManagementClient(conn, subscription_id)
+    discover_result = compute_client.servers.list()
+    
+    db_list = list()
+    for web in discover_result:
+        details = web.id.split("/")
+      
+        vm_detail = {'{#AZ_DBSERVER_NAME}': details[8],
+                        '{#AZ_DBSERVER_RESOURCEGROUP}': details[4],
+                        '{#AZ_DBSERVER_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_DBSERVER_GROUPNAME}': "{} - Azure".format(options.groupname)
+                        }
+        db_list.append(vm_detail)
+  
+    print(json.dumps({"data": db_list}, indent=4))
+
+def azure_databases_list(instance_name, resource_group):
+    from azure.mgmt.sql import SqlManagementClient
+    
+    rg_name = resource_group
+    server_name = instance_name
+
+    compute_client = SqlManagementClient(conn, subscription_id)
+    discover_result = compute_client.databases.list_by_server(resource_group_name=rg_name, 
+                                                             server_name=server_name)
+    
+    db_list = list()
+    for web in discover_result:
+        details = web.id.split("/")
+      
+        vm_detail = {'{#AZ_DATABASE_NAME}': details[10],
+                    '{#AZ_DATABASESERVER_NAME}': details[8],
+                        '{#AZ_DATABASE_RESOURCEGROUP}': details[4]
+                        }
+        db_list.append(vm_detail)
+  
+    print(json.dumps({"data": db_list}, indent=4))
+    
+
 ''' For menu '''
 def main(credentials):
     get_credentials(credentials=credentials)
@@ -130,6 +175,20 @@ def main(credentials):
 
     if (options.az_webapp):
         azure_webapp_list()
+
+    if (options.az_sql):
+        azure_sql_instances_list()
+
+    if (options.az_databases):
+       
+        az_databases_options = options.az_databases.split(',')
+        if len(az_databases_options) <2:
+                print("USAGE: sql_instance_name, resource_group")
+                sys.exit(1)
+        else:
+            sql_instance = az_databases_options[0]
+            resource_group = az_databases_options[1]
+            azure_databases_list(instance_name=sql_instance, resource_group=resource_group)
 
 if __name__ == '__main__':
     global subscription_id
