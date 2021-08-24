@@ -8,6 +8,7 @@
 #       OPTIONS:  -a: Discovers API Managements
 #                 -d : discovers Azure databricks
 #                 -v: discovers VPN Gateway 
+#                 -G <Group Name>: (Usually Client Name). For inventary purposes
 #  REQUIREMENTS:  azure-cli (https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 #                 jq (apt install jq) 
 #          BUGS:  --- 
@@ -27,9 +28,6 @@ azure_login() {
   APP_ID=$(echo ${AZURE_CREDENTIALS} | cut -d \: -f 2;)
   # Your service principal password
   PASSWORD=$(echo ${AZURE_CREDENTIALS} | cut -d \: -f 3;)
-  #The resource group
-  RESOURCE_GROUP=$(echo ${AZURE_CREDENTIALS} | cut -d \: -f 4;)
-
   az login --service-principal --username ${APP_ID} --password ${PASSWORD} --tenant ${TENANT_ID} >/dev/null
 }
 
@@ -57,27 +55,27 @@ vpn_discover() {
 }
 
 apim_discover() {
-  APIM_LIST=$(az apim list | grep '"id"' | awk '{print $2}')
+  APIM_LIST=$(az apim list 2>/dev/null | grep '"id"' | awk '{print $2}';)
   #IFS=,
   echo -n '{"data":['
   for APIM in $APIM_LIST; do
     APIM_NAME=$(echo $APIM | cut -d '/' -f 9 | tr -d  '",')
     APIM_RESOURCE_GROUP=$(echo $APIM | cut -d '/' -f 5)
-    echo -n "{\"{#AZ_APIM_NAME}\": \"${APIM_NAME}\" , \"{#AZ_APIM_RESOURCEGROUP}\": \"${APIM_RESOURCE_GROUP}\" },"
+    echo -n "{\"{#AZ_APIM_NAME}\": \"${APIM_NAME}\" , \"{#AZ_APIM_RESOURCEGROUP}\": \"${APIM_RESOURCE_GROUP}\", \"{#AZ_APIM_GROUPNAME}\": \"${AZ_GROUPNAME}\" },"
   done  |sed -e 's:\},$:\}:'
 
   echo -n ']}' 
 }
 
 databricks_discover() {
-  ADB_LIST=$(az databricks workspace list | grep '"id"' | awk '{print $2}')
+  ADB_LIST=$(az databricks workspace list 2>/dev/null | grep '"id"' | awk '{print $2}')
   #IFS=,
   echo -n '{"data":['
   for DATABRICKS in $ADB_LIST; do
     DATABRICKS_NAME=$(echo $DATABRICKS | cut -d '/' -f 9 | tr -d  '",')
     DATABRICKS_RESOURCE_GROUP=$(echo $DATABRICKS | cut -d '/' -f 5)
     #echo -n "$VPN_GATEWAY"
-    echo -n "{\"{#AZ_DATABRICKS_NAME}\": \"${DATABRICKS_NAME}\" , \"{#AZ_DATABRICKS_RESOURCEGROUP}\": \"${DATABRICKS_RESOURCE_GROUP}\" },"
+    echo -n "{\"{#AZ_DATABRICKS_NAME}\": \"${DATABRICKS_NAME}\" , \"{#AZ_DATABRICKS_RESOURCEGROUP}\": \"${DATABRICKS_RESOURCE_GROUP}\", \"{#AZ_DATABRICKS_GROUPNAME}\": \"${AZ_GROUPNAME}\" },"
   done  |sed -e 's:\},$:\}:'
 
   echo -n ']}' 
@@ -89,11 +87,14 @@ vpn_status() {
 }
 
 #BEGIN
-while getopts "C:adv:" parameter; do
+while getopts "C:G:adv:" parameter; do
     case "${parameter}" in
       C)
          export AZURE_CREDENTIALS=${OPTARG}
         ;;
+      G)
+         AZ_GROUPNAME="${OPTARG} - Azure"
+        ;;        
       v)
           azure_login
           vpn_discover
