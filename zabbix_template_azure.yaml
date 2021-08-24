@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-08-23T22:43:13Z'
+  date: '2021-08-24T18:36:05Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -74,6 +74,28 @@ zabbix_export:
                 -
                   tag: Application
                   value: 'Azure Connection'
+        -
+          uuid: 4d65be707ad8474d9b6c98b8dda978e2
+          name: 'Azure Kubernetes discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","-G","{$AZURE_CLIENTNAME}","--aks"]'
+          delay: 1d
+          description: 'Discovers Azure Kubernetes Services - AKS'
+          host_prototypes:
+            -
+              uuid: 2e370296db4c421b835cf3822cb30e5c
+              host: '{#AZ_AKS_NAME}'
+              name: '{#AZ_AKS_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_AKS_GROUPNAME}'
+              templates:
+                -
+                  name: 'Template - Azure AKS'
         -
           uuid: 4d1d9ab3e1794efcaae0cccad63e0756
           name: 'Azure DataFactory discovery'
@@ -175,6 +197,32 @@ zabbix_export:
                 -
                   macro: '{$AZURE_RESOURCE_GROUP}'
                   value: '{#AZ_WEBAPP_RESOURCEGROUP}'
+        -
+          uuid: 81ef25e004214c69b6fc57604e7f08cc
+          name: 'Azure API Management discovery'
+          type: EXTERNAL
+          key: 'az_discovery.sh["-C","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_APP_PASSWORD}","-G","{$AZURE_CLIENTNAME}","-a"]'
+          delay: 1d
+          description: 'Discovers API Management'
+          host_prototypes:
+            -
+              uuid: 79ffce97b5d945c3aea56f19c1b67fb2
+              host: '{#AZ_APIM_NAME}'
+              name: '{#AZ_APIM_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_APIM_GROUPNAME}'
+              templates:
+                -
+                  name: 'Template - Azure API Management'
+              macros:
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_APIM_RESOURCEGROUP}'
       macros:
         -
           macro: '{$AZURE_CLIENTNAME}'
@@ -206,7 +254,7 @@ zabbix_export:
           uuid: e58913d7eaf740e69216b03d19a8451e
           name: 'AKS Number of pods in Ready state'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},AKS,kube_pod_status_ready,total"]'
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},AKS,kube_pod_status_ready,average"]'
           delay: 5m
           history: 7d
           value_type: FLOAT
@@ -992,3 +1040,84 @@ zabbix_export:
           macro: '{$AZURE_SUBSCRIPTION_ID}'
         -
           macro: '{$AZURE_TENANT_ID}'
+    -
+      uuid: 70a57a66f04e440fabae389439ca493f
+      template: 'Template - Azure VPN Gateway'
+      name: 'Template - Azure VPN Gateway'
+      description: 'Discovers Azure VPN Gateway and monitoring status for each of them'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: 83bf2cfbd7034e6384253a62882d7630
+          name: 'Azure Vpn Connection Status'
+          type: EXTERNAL
+          key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_PASSWORD}:{$AZURE_RESOURCE_GROUP}","-s","{$AZURE_VPN_NAME}"]'
+          status: DISABLED
+          valuemap:
+            name: 'Service state'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - ^Connected
+                - '1'
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+      discovery_rules:
+        -
+          uuid: 38ee3fbeed2b451daa5e4c5c878a0270
+          name: 'Azure VPN Gateway discovery'
+          type: EXTERNAL
+          key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_PASSWORD}:{$AZURE_RESOURCE_GROUP}","-d"]'
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: e3ce2b1232eb4798bb1c87ba5d92ad30
+              name: 'Azure Vpn Connection Status [ {#VPN_GATEWAY_NAME} ]'
+              type: EXTERNAL
+              key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_PASSWORD}:{$AZURE_RESOURCE_GROUP}","-s","{#VPN_GATEWAY_NAME}"]'
+              history: 7d
+              valuemap:
+                name: 'Service state'
+              preprocessing:
+                -
+                  type: REGEX
+                  parameters:
+                    - ^Connected
+                    - '1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure VPN Gateway Status'
+      macros:
+        -
+          macro: '{$AZURE_APP_ID}'
+          value: 7865fff4-7deb-4e79-b693-8193714eac3e
+        -
+          macro: '{$AZURE_PASSWORD}'
+          value: 3b554a44-e2c8-4d72-90c0-53fa5b40054c
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+          value: RG_MAAS_LOGICALIS
+        -
+          macro: '{$AZURE_TENANT_ID}'
+          value: bbbc2097-6b77-456e-886c-1cd2216e96e4
+        -
+          macro: '{$AZURE_VPN_NAME}'
+      valuemaps:
+        -
+          uuid: 10c724af94d14d2fb2e58823f10adc19
+          name: 'Service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
