@@ -61,24 +61,9 @@ apim_discover() {
   #IFS=,
   echo -n '{"data":['
   for APIM in $APIM_LIST; do
-    APIM_NAME=$(echo $DATABRICKS | cut -d '/' -f 9 | tr -d  '",')
-    APIM_RESOURCE_GROUP=$(echo $DATABRICKS | cut -d '/' -f 5)
-    #echo -n "$VPN_GATEWAY"
-    echo -n "{\"{#DATABRICKS_NAME}\": \"${APIM_NAME}\" , \"{#DATABRICKS_RESOURCE_GROUP}\": \"${APIM_RESOURCE_GROUP}\" },"
-  done  |sed -e 's:\},$:\}:'
-
-  echo -n ']}' 
-}
-
-aks_discover() {
-  APIM_LIST=$(az apim list | grep '"id"' | awk '{print $2}')
-  #IFS=,
-  echo -n '{"data":['
-  for APIM in $APIM_LIST; do
-    APIM_NAME=$(echo $DATABRICKS | cut -d '/' -f 9 | tr -d  '",')
-    APIM_RESOURCE_GROUP=$(echo $DATABRICKS | cut -d '/' -f 5)
-    #echo -n "$VPN_GATEWAY"
-    echo -n "{\"{#DATABRICKS_NAME}\": \"${APIM_NAME}\" , \"{#DATABRICKS_RESOURCE_GROUP}\": \"${APIM_RESOURCE_GROUP}\" },"
+    APIM_NAME=$(echo $APIM | cut -d '/' -f 9 | tr -d  '",')
+    APIM_RESOURCE_GROUP=$(echo $APIM | cut -d '/' -f 5)
+    echo -n "{\"{#AZ_APIM_NAME}\": \"${APIM_NAME}\" , \"{#AZ_APIM_RESOURCEGROUP}\": \"${APIM_RESOURCE_GROUP}\" },"
   done  |sed -e 's:\},$:\}:'
 
   echo -n ']}' 
@@ -92,7 +77,7 @@ databricks_discover() {
     DATABRICKS_NAME=$(echo $DATABRICKS | cut -d '/' -f 9 | tr -d  '",')
     DATABRICKS_RESOURCE_GROUP=$(echo $DATABRICKS | cut -d '/' -f 5)
     #echo -n "$VPN_GATEWAY"
-    echo -n "{\"{#DATABRICKS_NAME}\": \"${DATABRICKS_NAME}\" , \"{#DATABRICKS_RESOURCE_GROUP}\": \"${DATABRICKS_RESOURCE_GROUP}\" },"
+    echo -n "{\"{#AZ_DATABRICKS_NAME}\": \"${DATABRICKS_NAME}\" , \"{#AZ_DATABRICKS_RESOURCEGROUP}\": \"${DATABRICKS_RESOURCE_GROUP}\" },"
   done  |sed -e 's:\},$:\}:'
 
   echo -n ']}' 
