@@ -7,6 +7,7 @@
 #   DESCRIPTION:  List in JSON-file Azure components
 #                 -C "tenant_id,app_id,app_password,subscription_id": Send AZ credentials [unecessary when using environment variables]
 #       OPTIONS:  -G Groupname (Usually Client Name). For inventary purposes
+#                 --aks : List Kubernetes Clusters
 #                 --virtualmachine : List VMs
 #                 --datafactory
 #                 --sql : List Database Servers
@@ -33,6 +34,7 @@ import json
 parser = argparse.ArgumentParser()
 parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help="Declare AZ credentials [tenant_id,app_id,app_password,subscription_id]")
 parser.add_argument("-G", "--groupname", dest="groupname", help="Maas Groupname")
+parser.add_argument("--aks", dest="az_aks", help="AKS Clusters", action="store_true")
 parser.add_argument("--connections", dest="az_connections", help="VPN Connections", action="store_true")
 parser.add_argument("--virtualmachine", dest="az_vm", help="List VMs", action="store_true")
 parser.add_argument("--datafactory", dest="az_datafactory", help="List DataFactory", action="store_true")
@@ -173,6 +175,7 @@ def azure_connection_list():
 
     rg_result = rg_client.resource_groups.list()
     connection_list = list()
+    discover_result = ()
 
     for rg in rg_result:
         rg_name = rg.id.split("/")[4]
@@ -189,6 +192,27 @@ def azure_connection_list():
             connection_list.append(vm_detail)
   
     print(json.dumps({"data": connection_list}, indent=4))
+
+def azure_aks_list():
+    from azure.mgmt.containerservice import ContainerServiceClient
+    
+    ''' First, list the resource groups'''
+    compute_client = ContainerServiceClient(conn, subscription_id)
+
+    kubernetes_list = list()
+
+    ''' Then, start a conection research, once per resource group '''
+    discover_result = compute_client.managed_clusters.list()
+    for kubernetes_cluster in discover_result:
+        details = kubernetes_cluster.id.split("/")
+    
+        vm_detail = {'{#AZ_AKS_NAME}': details[8],
+                        '{#AZ_AKS_RESOURCEGROUP}': details[4],
+                        '{#AZ_AKS_SUBSCRIPTIONS}': details[2],
+                        }
+        kubernetes_list.append(vm_detail)
+  
+    print(json.dumps({"data": kubernetes_list}, indent=4))
 
 ''' For menu '''
 def main(credentials):
@@ -211,6 +235,9 @@ def main(credentials):
 
     if (options.az_sql):
         azure_sql_instances_list()
+
+    if (options.az_aks):
+        azure_aks_list()
 
     if (options.az_databases):
        

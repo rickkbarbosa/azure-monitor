@@ -45,7 +45,7 @@ resource_type_list['ADF'] = "Microsoft.DataFactory/factories"             #DataF
 resource_type_list['APIM'] =  "Microsoft.ApiManagement/service"             #APIManagement
 resource_type_list['VM'] = "Microsoft.Compute/virtualMachines"              #VM
 resource_type_list['WEB'] =  "Microsoft.Web/sites"                           #WebApp
-resource_type_list['DATABRICKS'] =  "Microsoft.Databricks/workspaces"                           #Databricks/Workspaces
+#resource_type_list['DATABRICKS'] =  "Microsoft.Databricks/workspaces"                           #Databricks/Workspaces
 resource_type_list['SQL'] =  "Microsoft.Sql/servers"
 resource_type_list['CONNECTION'] =  "Microsoft.Network/connections"                      #Connections
 
