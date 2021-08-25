@@ -115,9 +115,10 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     ''' Aggregations: Total, Sum, Count, Minimum, Maximum, Average'''
     ''' https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-aggregation-explained '''
 
-    ''' Providing different timerange when monitoring DataFactories '''
-    if ( resource_type == "ADF" ):
-        metrics_timerange(minutes=60)                      #Every 6 hours
+    ''' Adjustment on aggregation values '''
+    t_range = (timetill - timeto).seconds
+    #if ( resource_type == "ADF" ):
+    if t_range > 3600:
         default_interval = "PT1H"
     else:
         default_interval = "PT1M"
@@ -143,10 +144,12 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     metrics_data = metrics_data.value[0]
 
     ''' Metrics involving API Management looks better using sum instead mean '''
-    # try:
-    #if ( resource_type == "APIM" or resource_type == "ADF" ):
-    if ( metric_aggregation.lower() == "total" or metric_aggregation.lower() == "count" ):
-        metrics_data = sum(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+    if ( metric_aggregation.lower() == "minimum"):
+        metrics_data = min(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+    elif ( metric_aggregation.lower() == "maximum" ):
+        metrics_data = max(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
+    elif ( metric_aggregation.lower() == "total" or metric_aggregation.lower() == "count" ):
+            metrics_data = sum(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
     else:
         try:
             metrics_data = fmean(eval(aggregation_name) for x in metrics_data.timeseries[0].data)
