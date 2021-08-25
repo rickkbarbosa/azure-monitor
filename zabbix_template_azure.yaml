@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-08-24T18:36:05Z'
+  date: '2021-08-25T21:12:43Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -92,10 +92,14 @@ zabbix_export:
                     name: 'Discovered hosts'
               group_prototypes:
                 -
-                  name: '{#AZ_AKS_GROUPNAME}'
+                  name: '{#AZ_AKS_GROUPNAME}/AKS'
               templates:
                 -
                   name: 'Template - Azure AKS'
+              tags:
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
         -
           uuid: 4d1d9ab3e1794efcaae0cccad63e0756
           name: 'Azure DataFactory discovery'
@@ -113,7 +117,7 @@ zabbix_export:
                     name: 'Discovered hosts'
               group_prototypes:
                 -
-                  name: '{#AZ_ADF_GROUPNAME}'
+                  name: '{#AZ_ADF_GROUPNAME}/DataFactory'
               templates:
                 -
                   name: 'Template - Azure DataFactory'
@@ -121,6 +125,10 @@ zabbix_export:
                 -
                   macro: '{$AZURE_RESOURCE_GROUP}'
                   value: '{#AZ_ADF_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
         -
           uuid: 96435facc0aa4fd186dab423b5d62fa2
           name: 'Azure Database Instances discovery'
@@ -139,7 +147,7 @@ zabbix_export:
                     name: 'Discovered hosts'
               group_prototypes:
                 -
-                  name: '{#AZ_DBSERVER_GROUPNAME}'
+                  name: '{#AZ_DBSERVER_GROUPNAME}/SQL'
               templates:
                 -
                   name: 'Template - Azure Databases'
@@ -147,6 +155,10 @@ zabbix_export:
                 -
                   macro: '{$AZURE_RESOURCE_GROUP}'
                   value: '{#AZ_DBSERVER_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
         -
           uuid: cafeb89be05c43709cb5483a9b073a63
           name: 'Azure Virtual Machine discovery'
@@ -164,7 +176,7 @@ zabbix_export:
                     name: 'Discovered hosts'
               group_prototypes:
                 -
-                  name: '{#AZ_VM_GROUPNAME}'
+                  name: '{#AZ_VM_GROUPNAME}/VirtualMachine'
               templates:
                 -
                   name: 'Template - Azure VM'
@@ -172,6 +184,10 @@ zabbix_export:
                 -
                   macro: '{$AZURE_RESOURCE_GROUP}'
                   value: '{#AZ_VM_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
         -
           uuid: 03443a2e57ca41169dc0b7744ebbeb3e
           name: 'Azure WebApp discovery'
@@ -189,7 +205,7 @@ zabbix_export:
                     name: 'Discovered hosts'
               group_prototypes:
                 -
-                  name: '{#AZ_WEBAPP_GROUPNAME}'
+                  name: '{#AZ_WEBAPP_GROUPNAME}/WebApp'
               templates:
                 -
                   name: 'Template - Azure App Services'
@@ -197,6 +213,10 @@ zabbix_export:
                 -
                   macro: '{$AZURE_RESOURCE_GROUP}'
                   value: '{#AZ_WEBAPP_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
         -
           uuid: 81ef25e004214c69b6fc57604e7f08cc
           name: 'Azure API Management discovery'
@@ -215,7 +235,7 @@ zabbix_export:
                     name: 'Discovered hosts'
               group_prototypes:
                 -
-                  name: '{#AZ_APIM_GROUPNAME}'
+                  name: '{#AZ_APIM_GROUPNAME}/APIM'
               templates:
                 -
                   name: 'Template - Azure API Management'
@@ -223,6 +243,10 @@ zabbix_export:
                 -
                   macro: '{$AZURE_RESOURCE_GROUP}'
                   value: '{#AZ_APIM_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
       macros:
         -
           macro: '{$AZURE_CLIENTNAME}'
@@ -382,12 +406,12 @@ zabbix_export:
           uuid: 86a52c20a73445c19df73aea90ca087f
           name: 'APIM Duration of Backend Requests'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,BackendDuration,average"]'
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,BackendDuration,maximum"]'
           delay: 5m
           history: 7d
           value_type: FLOAT
           units: ms
-          description: 'Duration of Backend Requests'
+          description: 'Duration of Backend Requests. It keeps the max value in the last n minutes'
           tags:
             -
               tag: Application
@@ -396,8 +420,7 @@ zabbix_export:
           uuid: 7c687d2336d14ab285f35ac4b795500b
           name: 'APIM Capacity'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,Capacity,average"]'
-          delay: 5m
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,Capacity,average","-t","1"]'
           history: 7d
           value_type: FLOAT
           units: '%'
@@ -409,6 +432,12 @@ zabbix_export:
             -
               tag: Application
               value: 'Azure API Management'
+          triggers:
+            -
+              uuid: 70d7e11306204e56b365a115b8c830ec
+              expression: 'avg(/Template - Azure API Management/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,Capacity,average","-t","1"],10)>={$APIM_CAPACITY_P2}'
+              name: '[ {HOST.NAME} ] - API Management is over capacity'
+              priority: AVERAGE
         -
           uuid: 751c5479a4464223a0f9b0b063e60c88
           name: 'APIM Duration of Requests'
@@ -424,14 +453,49 @@ zabbix_export:
               tag: Application
               value: 'Azure API Management'
         -
-          uuid: d2eae22ce0bc44e2bd9ce0db89284d5d
-          name: 'APIM EventHub Events (Sucessfull)'
+          uuid: 78b369a89c3b49db904fee61ef279c07
+          name: 'APIM EventHub Events (Rejected)'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubSuccessfulEvents,total"]'
-          delay: 5m
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubRejectedEvents,total","-t","1"]'
           history: 7d
           value_type: FLOAT
           description: 'Number of EventHub Events'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: d2eae22ce0bc44e2bd9ce0db89284d5d
+          name: 'APIM EventHub Events (Sucessfull)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubSuccessfulEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 336b115418d44198b81372ef192c31a3
+          name: 'APIM EventHub Events (Throttled)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubThrottledEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events Throttled'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 64ad701b832a423390cb6afdce08e33a
+          name: 'APIM EventHub Events (Timed Out)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubTimedoutEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events timed out'
           tags:
             -
               tag: Application
@@ -454,8 +518,7 @@ zabbix_export:
           uuid: 1030c8822d79408d9192c7c75106dee0
           name: 'APIM EventHub Events (Failed)'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubTotalFailedEvents,total"]'
-          delay: 5m
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,EventHubTotalFailedEvents,total","-t","1"]'
           history: 7d
           value_type: FLOAT
           description: 'Failed EventHub Events'
@@ -467,8 +530,7 @@ zabbix_export:
           uuid: aac97ed7dd5f427cb45ecfc63f73fa7c
           name: 'APIM Number of Requests'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,Requests,total"]'
-          delay: 5m
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},APIM,Requests,total","-t","1"]'
           history: 7d
           value_type: FLOAT
           description: 'Number of requests on API Management'
@@ -477,6 +539,9 @@ zabbix_export:
               tag: Application
               value: 'Azure API Management'
       macros:
+        -
+          macro: '{$APIM_CAPACITY_P2}'
+          value: '50'
         -
           macro: '{$AZURE_RESOURCE_GROUP}'
         -
@@ -493,6 +558,19 @@ zabbix_export:
           name: Templates/Azure
       items:
         -
+          uuid: df2c41997b7246b792f292f455efe460
+          name: 'WebApp Connections'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,AppConnections,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
           uuid: 8ba4277eab8044d5ad5f78594688113b
           name: 'WebApp HTTP 2xx'
           type: EXTERNAL
@@ -506,10 +584,36 @@ zabbix_export:
               tag: Application
               value: 'Azure App Services'
         -
+          uuid: 002ff4e85f404c61a39eedb82cef34f3
+          name: 'WebApp HTTP 3xx'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http3xx,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
           uuid: 726d96e6cea84f428585c68c28b26809
           name: 'WebApp HTTP 4xx'
           type: EXTERNAL
           key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 161e166c6a194adbb2405ef2f95859db
+          name: 'WebApp HTTP 5xx'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"]'
           delay: 5m
           history: 7d
           value_type: FLOAT
@@ -558,6 +662,20 @@ zabbix_export:
               tag: Application
               value: 'Azure App Services'
         -
+          uuid: 2967103e74b64205af2860baee9423c6
+          name: 'WebApp Response Time'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,HttpResponseTime,maximum"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: s
+          description: 'Response time'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
           uuid: 8ab618605fee4bf5b4e4b9a079481243
           name: 'WebApp Requests'
           type: EXTERNAL
@@ -570,11 +688,45 @@ zabbix_export:
             -
               tag: Application
               value: 'Azure App Services'
+        -
+          uuid: e405e9b138484327b287ba5474f9902c
+          name: 'WebApp AppDomains (Total)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,TotalAppDomains,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'WebApp total app domains'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 83ccb52b84db46eb8cc1dafcee782383
+          name: 'WebApp AppDomains (Unloaded)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,TotalAppDomainsUnloaded,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'WebApp total app domains unloaded'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
       macros:
         -
           macro: '{$AZURE_RESOURCE_GROUP}'
         -
           macro: '{$REGION}'
+        -
+          macro: '{$WEBAPP_HTTP4XX_P2}'
+          value: '30'
+          description: 'Number of tolerant Http 4xx on webapp in percentage'
+        -
+          macro: '{$WEBAPP_HTTP5XX_P2}'
+          value: '30'
+          description: 'Number of tolerant Http 5xx on webapp in percentage'
     -
       uuid: 1cce07a8e3ab40d6b02c3a5e35086975
       template: 'Template - Azure Databases'
@@ -733,13 +885,12 @@ zabbix_export:
       items:
         -
           uuid: bfbf861940d4436b94b8d76a562f8336
-          name: 'DataFactory Activities failed'
+          name: 'DataFactory Activities (Failed)'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,ActivityFailedRuns,total"]'
-          delay: 3h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,ActivityFailedRuns,total","-t","10"]'
+          delay: 10m
           history: 7d
           value_type: FLOAT
-          units: b
           description: |
             Failed Activity Runs
             
@@ -751,13 +902,12 @@ zabbix_export:
               value: 'Azure DataFactory'
         -
           uuid: 68d30082b7b7409883037f0bf62bf1aa
-          name: 'DataFactory Activities succeed'
+          name: 'DataFactory Activities (Succeed)'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,ActivitySucceededRuns,total"]'
-          delay: 3h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,ActivitySucceededRuns,total","-t","10"]'
+          delay: 10m
           history: 7d
           value_type: FLOAT
-          units: b
           description: |
             Succeeded activity runs 
             
@@ -771,8 +921,7 @@ zabbix_export:
           uuid: 362d42b4db714bc08a888eadb882d924
           name: 'DataFactory IR runtime available memory'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average"]'
-          delay: 3h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"]'
           history: 7d
           value_type: FLOAT
           units: b
@@ -785,12 +934,33 @@ zabbix_export:
             -
               tag: Application
               value: 'Azure DataFactory'
+          triggers:
+            -
+              uuid: 2b496e562bb54ef9856e599c4e68e373
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P2}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > {$IR_MEMORY_P3}'
+              name: '[ {HOST.HOST} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}%'
+              priority: AVERAGE
+              description: 'The Integration runtime is taking too much memory'
+            -
+              uuid: df2e089b722f4bf28c4689fc4fa9f447
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P3}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > ({$IR_MEMORY_P3} + ({$IR_MEMORY_P3} * 10) )'
+              name: '[ {HOST.HOST} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}Gb'
+              priority: WARNING
+              description: 'The Integration runtime is taking too much memory'
+              dependencies:
+                -
+                  name: '[ {HOST.HOST} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}%'
+                  expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P2}'
+                  recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > {$IR_MEMORY_P3}'
         -
           uuid: a7de211e73924751a025bd73c263086a
           name: 'DataFactory IR runtime queue duration'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAverageTaskPickupDelay,average"]'
-          delay: 3h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAverageTaskPickupDelay,average","-t","1"]'
           history: 7d
           value_type: FLOAT
           units: s
@@ -807,8 +977,7 @@ zabbix_export:
           uuid: d048417c53e049a79efaf541362e633b
           name: 'DataFactory IR runtime CPU utilization'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average"]'
-          delay: 3h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"]'
           history: 7d
           value_type: FLOAT
           units: '%'
@@ -820,12 +989,33 @@ zabbix_export:
             -
               tag: Application
               value: 'Azure DataFactory'
+          triggers:
+            -
+              uuid: baf16dc9948844a08f76dc4a00e308ba
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)>{$IR_CPU_P2}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)<{$IR_CPU_P3}'
+              name: '[ {HOST.HOST} ] - DataFactory IR CPU consumption is up to {$IR_CPU_P2}%'
+              priority: AVERAGE
+              description: 'The Integration runtime is taking too much CPU'
+            -
+              uuid: fa1bb1c0af8c4ad8bb5db320e3801ad9
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)>{$IR_CPU_P3}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)<{$IR_CPU_P3}'
+              name: '[ {HOST.HOST} ] - DataFactory IR CPU consumption is up to {$IR_CPU_P3}Gb'
+              priority: WARNING
+              description: 'The Integration runtime is taking too much CPU'
+              dependencies:
+                -
+                  name: '[ {HOST.HOST} ] - DataFactory IR CPU consumption is up to {$IR_CPU_P2}%'
+                  expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)>{$IR_CPU_P2}'
+                  recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)<{$IR_CPU_P3}'
         -
           uuid: bb301f4416134bc6b775cd50d471b8ed
           name: 'DataFactory IR queue lenght'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeQueueLength,total"]'
-          delay: 1h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeQueueLength,total","-t","1"]'
           history: 7d
           value_type: FLOAT
           description: |
@@ -838,11 +1028,24 @@ zabbix_export:
               tag: Application
               value: 'Azure DataFactory'
         -
+          uuid: 701fa10eaf27464d9f66157d420b94ec
+          name: 'DataFactory Pipeline Run (Cancelled)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineCancelledRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of canceled pipeline runs metrics'
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
           uuid: 8781418aa3d340a8825635c8c93007fc
           name: 'DataFactory Failed activity runs metrics'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineFailedRuns,total"]'
-          delay: 6h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineFailedRuns,total","-t","10"]'
+          delay: 10m
           history: 7d
           value_type: FLOAT
           description: 'Number of Failed pipeline runs'
@@ -850,12 +1053,21 @@ zabbix_export:
             -
               tag: Application
               value: 'Azure DataFactory'
+          triggers:
+            -
+              uuid: fe34b2ef54484edf987cd173f61ddc17
+              expression: 'last(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineFailedRuns,total","-t","10"])>0'
+              recovery_mode: NONE
+              name: '[ {HOST.HOST} ] - Failed to execute a pipeline run'
+              priority: AVERAGE
+              description: 'One or more pipelines has been failed while trying to execute. Please login on Azure Datafatctories and check author and monitor.'
+              manual_close: 'YES'
         -
           uuid: e705249499404c35be3bad99029f9c7c
-          name: 'DataFactory Succeeded pipeline runs'
+          name: 'DataFactory Pipeline Run (Succeed)'
           type: EXTERNAL
-          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineSucceededRuns,total"]'
-          delay: 6h
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineSucceededRuns,total","-t","10"]'
+          delay: 10m
           history: 7d
           value_type: FLOAT
           description: 'Number of succeeded pipeline runs metrics'
@@ -863,9 +1075,67 @@ zabbix_export:
             -
               tag: Application
               value: 'Azure DataFactory'
+        -
+          uuid: 9693a01bf8a3487480361e0cd704ee65
+          name: 'DataFactory Trigger (Cancelled)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,TriggerCancelledRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Cancelled Trigger Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 79556be034614e898356ce1b7380ff51
+          name: 'DataFactory Trigger (Failed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,TriggerFailedRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Failed Activity Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 77ada9daec75443abfb65cc30a0db3ef
+          name: 'DataFactory Trigger (Succeed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,TriggerSucceededRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Succeed Activity Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
       macros:
         -
           macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$IR_MEMORY_P2}'
+          value: '1048576'
+          description: 'Memory available, in bytes'
+        -
+          macro: '{$IR_MEMORY_P3}'
+          value: '1073741824'
         -
           macro: '{$REGION}'
     -
@@ -1121,3 +1391,28 @@ zabbix_export:
             -
               value: '1'
               newvalue: Up
+  triggers:
+    -
+      uuid: 094e9dfe067341cf9b023319944f6950
+      expression: '( last(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,TriggerFailedRuns,total","-t","10"])>0 ) or (last(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},ADF,PipelineCancelledRuns,total","-t","10"])>0 )'
+      recovery_mode: NONE
+      name: '[ {HOST.HOST} ] - Failed or Cancelled a DataFactory Trigger'
+      priority: AVERAGE
+      description: 'A Datafactory trigger has been cancelled or this execution has failed.'
+      manual_close: 'YES'
+    -
+      uuid: e7eb50614d04438bb02d097686913540
+      expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP4XX_P2}'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50'
+      name: '[ {HOST.NAME} ] - Number of 4xx errors is up to {$WEBAPP_HTTP4XX_P2} %'
+      priority: WARNING
+      description: 'Number of 5xx error codes is too high. This alert gonna be still until number of 500 is lower than 50 percent of total requests.'
+    -
+      uuid: 0cb52118b4f1439a88015ab65ea356d9
+      expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP5XX_P2}'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{HOST.HOST},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50'
+      name: '[ {HOST.NAME} ] - Number of 5xx errors is up to {$WEBAPP_HTTP5XX_P2} %'
+      priority: AVERAGE
+      description: 'Number of 5xx error codes is too high. This alert gonna be still until number of 500 is lower than 50 percent of total requests.'
