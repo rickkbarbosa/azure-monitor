@@ -51,6 +51,9 @@ _type_: Azure Components granted by this script. :
 * ADF: Data Factory
 * APIM: API Management
 * VM: Virtual Machines
+* WEB: App WebServices
+* SQL: Azure databases
+* CONNECTION: Azur connections
 
 
 _aggregation_ : metric aggregation, depends of metric
@@ -70,6 +73,12 @@ Use the  option _-t_ to define a custom time minute range, in minutes. Example:
 TODO:
 
 * Aggregate others Azure components [in the list](https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported)
-* Improve the aggregations calc (mean, fmean, sum...)
 * AKS: Split metrics by nodes (e.g: node memory, presenting each node separated)
-* Discover components [E.G: Virtual Machines](https://stackoverflow.com/questions/58925397/how-could-i-list-azure-virtual-machines-using-python)
+
+
+
+
+### BUY ME A COFFEE ;) 
+
+
+* [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=29JLND674CAGY&currency_code=BRL)
