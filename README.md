@@ -77,6 +77,31 @@ TODO:
 
 
 
+### Zabbix Template ###
+
+To use in Zabbix, follow these instructions:
+
+- Copy the files in this repository to external scripts folder (usually /usr/lib/zabbix/externalscripts)
+- Install the python libraries with `pip install -r requirements.txt`
+
+In the frontend, include the template _zabbix_template_azure.yaml_ . There will append all Azure templates.
+
+
+- Create an host and attach the template "Template - Itens Discovery"
+
+![Screenshot](img/template_client.png)
+
+
+- In *Macros*, put in the values your Azure Service Principal credentials:
+
+* AZURE_APP_ID 
+* AZURE_APP_PASSWORD
+* AZURE_SUBSCRIPTION_ID
+* AZURE_TENANT_ID
+
+* *AZURE CLIENT NAME* : This macro exists for Inventory Purposes. The discover will create hosts for each component detected, and add in groups "{$CLIENTNAME} - Azure/ITEM" (E. G.: ClientName - Azure/VirtualMachine) .
+
+
 
 ### BUY ME A COFFEE ;) 
 
