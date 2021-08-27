@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-08-27T21:05:49Z'
+  date: '2021-08-27T21:13:38Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -1255,6 +1255,23 @@ zabbix_export:
           name: Templates/Azure
       items:
         -
+          uuid: 25e9a2bc40f24d0da91f9c6ab90fbbec
+          name: 'Cloud instance region'
+          type: DEPENDENT
+          key: azure.host.instanceregion
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          inventory_link: SITE_RACK
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.data.[0].REGION'
+          master_item:
+            key: host.info
+        -
           uuid: abf0e83d41864a248d1955d78669d59d
           name: 'Host Name'
           type: DEPENDENT
@@ -1341,7 +1358,7 @@ zabbix_export:
           value_type: TEXT
           params: |
             var params = JSON.parse(value);
-            message = '{ "data":  [ { "HOST_PROVIDER": "Azure", "HOST_NAME": "' + params.hostname +  '", "CLIENT_NAME": "' + params.clientname + '", '+ '"RESOURCE_GROUP": "' + params.resourcegroup + '"} ]}'
+            message = '{ "data":  [ { "HOST_PROVIDER": "Azure", "HOST_NAME": "' + params.hostname +  '", "CLIENT_NAME": "' + params.clientname + '", ' + '", "REGION": "' + params.region + '", ' + '"RESOURCE_GROUP": "' + params.resourcegroup + '"} ]}'
             return(message);
           timeout: '30'
           parameters:
@@ -1354,6 +1371,9 @@ zabbix_export:
             -
               name: hostname
               value: '{$AZURE_HOSTNAME}'
+            -
+              name: region
+              value: '{$AZURE_REGION}'
       macros:
         -
           macro: '{$AZURE_CLIENTNAME}'
