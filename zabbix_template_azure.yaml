@@ -1,0 +1,1631 @@
+zabbix_export:
+  version: '5.4'
+  date: '2021-08-27T15:04:59Z'
+  groups:
+    -
+      uuid: f2481361f99448eea617b7b1d4765566
+      name: 'Discovered hosts'
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+    -
+      uuid: 966c754e797845739bd48c15217e0105
+      name: Templates/Azure
+  templates:
+    -
+      uuid: c9bcb62a68204abaadb3b57f087f8120
+      template: 'Template - Azure - Itens discovery'
+      name: 'Template - Azure - Itens discovery'
+      description: 'Template to find all Virtual Machines on Azure'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      discovery_rules:
+        -
+          uuid: ed971eec2bb84e36b51d020e9b04640d
+          name: 'Azure VPN Gateway discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connections"]'
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: f8c341ba419d4a7c98b2d1896db450b8
+              name: 'Azure Vpn Connection Status [ {#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_APP_PASSWORD}:{#AZ_CONNECTION_RESOURCEGROUP}","-s","{#AZ_CONNECTION_NAME}"]'
+              history: 7d
+              valuemap:
+                name: 'Azure Connection Status'
+              preprocessing:
+                -
+                  type: REGEX
+                  parameters:
+                    - ^Connected
+                    - '1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure Connection'
+            -
+              uuid: f60d4bd8650c48f7a8adb2d5c971a525
+              name: 'AZ Connection - Bits In/sec [ {#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsInPerSecond,average"]'
+              delay: 5m
+              history: 7d
+              units: bps
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure Connection'
+            -
+              uuid: 3be0256cdab24a97a05be7cc6974efe8
+              name: 'AZ Connection - Bits Out/sec [ {#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsOutPerSecond,average"]'
+              delay: 5m
+              history: 7d
+              units: bps
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure Connection'
+        -
+          uuid: 4d65be707ad8474d9b6c98b8dda978e2
+          name: 'Azure Kubernetes discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","-G","{$AZURE_CLIENTNAME}","--aks"]'
+          delay: 1d
+          description: 'Discovers Azure Kubernetes Services - AKS'
+          host_prototypes:
+            -
+              uuid: 2e370296db4c421b835cf3822cb30e5c
+              host: '{#AZ_AKS_NAME}_aks'
+              name: 'aks/{#AZ_AKS_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_AKS_GROUPNAME}/AKS'
+              templates:
+                -
+                  name: 'Template - Azure AKS'
+                -
+                  name: 'Template - Azure Inventory'
+              macros:
+                -
+                  macro: '{$AZURE_AKS_NAME}'
+                  value: '{#AZ_AKS_NAME}'
+                -
+                  macro: '{$AZURE_HOSTNAME}'
+                  value: '{#AZ_AKS_NAME}'
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_AKS_RESOURCE_GROUP}'
+              tags:
+                -
+                  tag: AzureSubscription
+                  value: '{$AZURE_SUBSCRIPTION_ID}'
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
+        -
+          uuid: 4d1d9ab3e1794efcaae0cccad63e0756
+          name: 'Azure DataFactory discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","-G","{$AZURE_CLIENTNAME}","--datafactory"]'
+          delay: 1d
+          host_prototypes:
+            -
+              uuid: 7339eee74ea74a06ba5e64641fdb2a7c
+              host: '{#AZ_ADF_NAME}_datafactory'
+              name: 'datafactory/{#AZ_ADF_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_ADF_GROUPNAME}/DataFactory'
+              templates:
+                -
+                  name: 'Template - Azure DataFactory'
+                -
+                  name: 'Template - Azure Inventory'
+              macros:
+                -
+                  macro: '{$AZURE_ADF_NAME}'
+                  value: '{#AZ_ADF_NAME}'
+                -
+                  macro: '{$AZURE_HOSTNAME}'
+                  value: '{#AZ_ADF_NAME}'
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_ADF_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: AzureSubscription
+                  value: '{$AZURE_SUBSCRIPTION_ID}'
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
+        -
+          uuid: 96435facc0aa4fd186dab423b5d62fa2
+          name: 'Azure Database Instances discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","-G","{$AZURE_CLIENTNAME}","--sql"]'
+          delay: 1d
+          description: 'Discovers Database Servers (SQL Instances) on Azure'
+          host_prototypes:
+            -
+              uuid: 8c2596abc39f42a8a8c0b61c94eea634
+              host: '{#AZ_DBSERVER_NAME}_sql'
+              name: 'sql/{#AZ_DBSERVER_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_DBSERVER_GROUPNAME}/SQL'
+              templates:
+                -
+                  name: 'Template - Azure Databases'
+                -
+                  name: 'Template - Azure Inventory'
+              macros:
+                -
+                  macro: '{$AZURE_DBSERVER_NAME}'
+                  value: '{#AZ_DBSERVER_NAME}'
+                -
+                  macro: '{$AZURE_HOSTNAME}'
+                  value: '{#AZ_DBSERVER_NAME}'
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_DBSERVER_RESOURCEGROUP}'
+              tags:
+                -
+                  tag: AzureSubscription
+                  value: '{$AZURE_SUBSCRIPTION_ID}'
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
+        -
+          uuid: cafeb89be05c43709cb5483a9b073a63
+          name: 'Azure Virtual Machine discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","-G","{$AZURE_CLIENTNAME}","--virtualmachine"]'
+          delay: 1d
+          host_prototypes:
+            -
+              uuid: af2363cf52ad4b3c9fc5843e19f94f06
+              host: '{#AZ_VM_NAME}_vm'
+              name: 'vm/{#AZ_VM_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_VM_GROUPNAME}/VirtualMachine'
+              templates:
+                -
+                  name: 'Template - Azure VM'
+              macros:
+                -
+                  macro: '{$AZURE_HOSTNAME}'
+                  value: '{#AZ_VM_NAME}'
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_VM_RESOURCEGROUP}'
+                -
+                  macro: '{$AZURE_VM_NAME}'
+                  value: '{#AZ_VM_NAME}'
+              tags:
+                -
+                  tag: AzureSubscription
+                  value: '{$AZURE_SUBSCRIPTION_ID}'
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
+        -
+          uuid: 03443a2e57ca41169dc0b7744ebbeb3e
+          name: 'Azure WebApp discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","-G","{$AZURE_CLIENTNAME}","--webapp"]'
+          delay: 1d
+          host_prototypes:
+            -
+              uuid: 8770275eaa6d41f1b882109917b7418e
+              host: '{#AZ_WEBAPP_NAME}-web'
+              name: 'web/{#AZ_WEBAPP_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_WEBAPP_GROUPNAME}/WebApp'
+              templates:
+                -
+                  name: 'Template - Azure App Services'
+                -
+                  name: 'Template - Azure Inventory'
+              macros:
+                -
+                  macro: '{$AZURE_HOSTNAME}'
+                  value: '{#AZ_WEBAPP_NAME}'
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_WEBAPP_RESOURCEGROUP}'
+                -
+                  macro: '{$AZURE_WEBAPP_NAME}'
+                  value: '{#AZ_WEBAPP_NAME}'
+              tags:
+                -
+                  tag: AzureSubscription
+                  value: '{$AZURE_SUBSCRIPTION_ID}'
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
+        -
+          uuid: 81ef25e004214c69b6fc57604e7f08cc
+          name: 'Azure API Management discovery'
+          type: EXTERNAL
+          key: 'az_discovery.sh["-C","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_APP_PASSWORD}","-G","{$AZURE_CLIENTNAME}","-a"]'
+          delay: 1d
+          description: 'Discovers API Management'
+          host_prototypes:
+            -
+              uuid: 79ffce97b5d945c3aea56f19c1b67fb2
+              host: '{#AZ_APIM_NAME}_apim'
+              name: 'apim/{#AZ_APIM_NAME}'
+              group_links:
+                -
+                  group:
+                    name: 'Discovered hosts'
+              group_prototypes:
+                -
+                  name: '{#AZ_APIM_GROUPNAME}/APIM'
+              templates:
+                -
+                  name: 'Template - Azure API Management'
+                -
+                  name: 'Template - Azure Inventory'
+              macros:
+                -
+                  macro: '{$AZURE_APIM_NAME}'
+                  value: '{#AZ_APIM_NAME}'
+                  description: 'Azure Item RealName on Azure'
+                -
+                  macro: '{$AZURE_HOSTNAME}'
+                  value: '{#AZ_APIM_NAME}'
+                -
+                  macro: '{$AZURE_RESOURCE_GROUP}'
+                  value: '{#AZ_APIM_RESOURCEGROUP}'
+                  description: 'Azure Item Resource Group'
+              tags:
+                -
+                  tag: AzureSubscription
+                  value: '{$AZURE_SUBSCRIPTION_ID}'
+                -
+                  tag: Client
+                  value: '{$AZURE_CLIENTNAME}'
+      macros:
+        -
+          macro: '{$AZURE_CLIENTNAME}'
+          value: ClientName
+          description: 'Client Name. Discover purposes'
+      valuemaps:
+        -
+          uuid: 94c59759897942ef84a0a69323cddf44
+          name: 'Azure Connection Status'
+          mappings:
+            -
+              value: '0'
+              newvalue: Disconnected
+            -
+              value: '1'
+              newvalue: Connected
+    -
+      uuid: 3cf597a0794d42ef8997bf933cd51b63
+      template: 'Template - Azure AKS'
+      name: 'Template - Azure AKS'
+      description: 'Azure Kubernetes Service Template'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: e58913d7eaf740e69216b03d19a8451e
+          name: 'AKS Number of pods in Ready state'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,kube_pod_status_ready,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of pods in Ready state'
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+        -
+          uuid: 46dba337cc1145bbaff7646dc3476cd3
+          name: 'AKS CPU Usage by Nodes (%)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,node_cpu_usage_percentage,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported'
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+        -
+          uuid: 693c2bc877f94c2ea66db472e2fda3d4
+          name: 'AKS Disk Usage (bytes)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,node_disk_usage_bytes,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: b
+          description: |
+            Disk Usage by cluster (mean, nodes)
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+        -
+          uuid: 0a9ea64e8f464be79163e5cbca1389de
+          name: 'AKS Disk Usage by Nodes (%)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,node_disk_usage_percentage,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            Disk Usage (%) by cluster (mean, nodes)
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+        -
+          uuid: d7a9d41c49dc4181ba84c683b339aef5
+          name: 'AKS Memory Usage by Nodes (%)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,node_memory_rss_percentage,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            Memory Usage (%) (mean, nodes)
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+        -
+          uuid: 971fb22cf04a4aaab78fc0d9734870fb
+          name: 'AKS Network In'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,node_network_in_bytes,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: bps
+          description: |
+            AKS Cluster Network In bytes
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+        -
+          uuid: bc51cd6db5ca4750ac298a4a9eadb268
+          name: 'AKS Network Out'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_AKS_NAME},{$AZURE_RESOURCE_GROUP},AKS,node_network_out_bytes,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: bps
+          description: |
+            AKS Cluster Network out bytes
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Kubernetes Services'
+      macros:
+        -
+          macro: '{$AZURE_AKS_NAME}'
+          value: '{HOST.HOST}'
+          description: 'Name of AKS Cluster Name.'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$REGION}'
+    -
+      uuid: eced389c0a294a8ea87f8bd2962ef9d5
+      template: 'Template - Azure API Management'
+      name: 'Template - Azure API Management'
+      description: 'Azure API Management Template'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: 86a52c20a73445c19df73aea90ca087f
+          name: 'APIM Duration of Backend Requests'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,BackendDuration,maximum"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: ms
+          description: 'Duration of Backend Requests. It keeps the max value in the last n minutes'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 7c687d2336d14ab285f35ac4b795500b
+          name: 'APIM Capacity'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,Capacity,average","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            Capacity consumption on API Management, in percentile.
+            
+            https://docs.microsoft.com/pt-br/azure/api-management/api-management-capacity
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+          triggers:
+            -
+              uuid: 70d7e11306204e56b365a115b8c830ec
+              expression: 'avg(/Template - Azure API Management/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,Capacity,average","-t","1"],10)>={$APIM_CAPACITY_P2}'
+              name: '[ {HOST.NAME} ] - API Management is over capacity'
+              priority: AVERAGE
+        -
+          uuid: 751c5479a4464223a0f9b0b063e60c88
+          name: 'APIM Duration of Requests'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,Duration,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: ms
+          description: 'Overall Duration of Gateway Requests'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 78b369a89c3b49db904fee61ef279c07
+          name: 'APIM EventHub Events (Rejected)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,EventHubRejectedEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: d2eae22ce0bc44e2bd9ce0db89284d5d
+          name: 'APIM EventHub Events (Sucessfull)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,EventHubSuccessfulEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 336b115418d44198b81372ef192c31a3
+          name: 'APIM EventHub Events (Throttled)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,EventHubThrottledEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events Throttled'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 64ad701b832a423390cb6afdce08e33a
+          name: 'APIM EventHub Events (Timed Out)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,EventHubTimedoutEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of EventHub Events timed out'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 871b74d089b34158b5dab4dc589bc4d3
+          name: 'APIM EventHub Events (Size)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,EventHubTotalBytesSent,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: b
+          description: 'Total bytes sent to EventHub'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: 1030c8822d79408d9192c7c75106dee0
+          name: 'APIM EventHub Events (Failed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,EventHubTotalFailedEvents,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Failed EventHub Events'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+        -
+          uuid: aac97ed7dd5f427cb45ecfc63f73fa7c
+          name: 'APIM Number of Requests'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_APIM_NAME},{$AZURE_RESOURCE_GROUP},APIM,Requests,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on API Management'
+          tags:
+            -
+              tag: Application
+              value: 'Azure API Management'
+      macros:
+        -
+          macro: '{$APIM_CAPACITY_P2}'
+          value: '50'
+        -
+          macro: '{$AZURE_APIM_NAME}'
+          value: '{HOST.HOST}'
+          description: 'Name of API Management.'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$REGION}'
+    -
+      uuid: d37b79deee604496b8e4819960cdc1fb
+      template: 'Template - Azure App Services'
+      name: 'Template - Azure App Services'
+      description: 'Azure WebApp monitoring'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: df2c41997b7246b792f292f455efe460
+          name: 'WebApp Connections'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,AppConnections,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 8ba4277eab8044d5ad5f78594688113b
+          name: 'WebApp HTTP 2xx'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http2xx,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 002ff4e85f404c61a39eedb82cef34f3
+          name: 'WebApp HTTP 3xx'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http3xx,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 726d96e6cea84f428585c68c28b26809
+          name: 'WebApp HTTP 4xx'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 161e166c6a194adbb2405ef2f95859db
+          name: 'WebApp HTTP 5xx'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 9445c54199ad4c8aa3e9c7c2c59a4766
+          name: 'WebApp HTTP 401'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http401,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 9fb16375f8be4a33856fe14699db6095
+          name: 'WebApp HTTP 403'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http403,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: bc233d8aedfa4924a76faa9e0372a3b1
+          name: 'WebApp HTTP 404'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http404,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 2967103e74b64205af2860baee9423c6
+          name: 'WebApp Response Time'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,HttpResponseTime,maximum"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: s
+          description: 'Response time'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 8ab618605fee4bf5b4e4b9a079481243
+          name: 'WebApp Requests'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of requests on APP service'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: e405e9b138484327b287ba5474f9902c
+          name: 'WebApp AppDomains (Total)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,TotalAppDomains,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'WebApp total app domains'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+        -
+          uuid: 83ccb52b84db46eb8cc1dafcee782383
+          name: 'WebApp AppDomains (Unloaded)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,TotalAppDomainsUnloaded,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: 'WebApp total app domains unloaded'
+          tags:
+            -
+              tag: Application
+              value: 'Azure App Services'
+      macros:
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$AZURE_WEBAPP_NAME}'
+          value: '{HOST.HOST}'
+          description: 'Name of Web App Name on Azure.'
+        -
+          macro: '{$REGION}'
+        -
+          macro: '{$WEBAPP_HTTP4XX_P2}'
+          value: '30'
+          description: 'Number of tolerant Http 4xx on webapp in percentage'
+        -
+          macro: '{$WEBAPP_HTTP5XX_P2}'
+          value: '30'
+          description: 'Number of tolerant Http 5xx on webapp in percentage'
+    -
+      uuid: 1cce07a8e3ab40d6b02c3a5e35086975
+      template: 'Template - Azure Databases'
+      name: 'Template - Azure Databases'
+      description: 'Azure SQL Template'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      discovery_rules:
+        -
+          uuid: 2a92deabd79e4d069642b328a9d66f85
+          name: 'Azure Databases Discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--database","{$AZURE_DBSERVER_NAME},{$AZURE_RESOURCE_GROUP}"]'
+          delay: 1h
+          description: 'Discovers all databases inside a SQL instance.'
+          item_prototypes:
+            -
+              uuid: f6a3936731114c6b805976cb11377b88
+              name: 'DB Failed Connections [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,connection_failed,total"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              description: 'Number of failed connections'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: b31b631f60294a64bc55a7db2ed882f7
+              name: 'DB Sucessful Connections [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,connection_successful,total"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              description: 'Number of sucessful connections'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: efe5e4ed6e154a768e21efa5d2b607a5
+              name: 'DB CPU Percentage [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,cpu_percent,average"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'CPU Consumption in percent'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: 852c690fda114169b22f7d7dad1e7931
+              name: 'DB Deadlocks [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,deadlock,total"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              description: 'Number of deadlocks'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: 1288e0545fa243ccbd94e1290cbf3ffe
+              name: 'DB DataI/O [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,physical_data_read_percent,average"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'Data I/O used by this Database'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: 488b1c47d18549f981ce80724e67b923
+              name: 'DB Sessions [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,sessions_percent,average"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'Percentage of sessions required by this database on SQL Instance'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: d3290798960b444a9917c345acdb9f92
+              name: 'DB Data Space (bytes) [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,storage,average"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              units: b
+              description: 'Data space'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+            -
+              uuid: 1d9e75c2a1c04b408e9f39d086be9122
+              name: 'DB Data Space (percent) [ {#AZ_DATABASE_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_DBSERVER_NAME}/databases/{#AZ_DATABASE_NAME},{$AZURE_RESOURCE_GROUP},SQL,storage_percent,average"]'
+              delay: 5m
+              history: 7d
+              value_type: FLOAT
+              units: '%'
+              description: 'Data space'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure SQL Database'
+          lld_macro_paths:
+            -
+              lld_macro: '{#ELB_TARGET}'
+              path: $.data
+      macros:
+        -
+          macro: '{$AZURE_APP_ID}'
+        -
+          macro: '{$AZURE_APP_PASSWORD}'
+        -
+          macro: '{$AZURE_DBSERVER_NAME}'
+          value: '{HOST.HOST}'
+          description: 'Name of Azure Database.'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$AZURE_SUBSCRIPTION_ID}'
+        -
+          macro: '{$AZURE_TENANT_ID}'
+        -
+          macro: '{$REGION}'
+    -
+      uuid: 7c80121ef0264fa89e7cf22f80beafde
+      template: 'Template - Azure DataFactory'
+      name: 'Template - Azure DataFactory'
+      description: 'Azure DataFactory Template'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: bfbf861940d4436b94b8d76a562f8336
+          name: 'DataFactory Activities (Failed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,ActivityFailedRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Failed Activity Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 68d30082b7b7409883037f0bf62bf1aa
+          name: 'DataFactory Activities (Succeed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,ActivitySucceededRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Succeeded activity runs 
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 362d42b4db714bc08a888eadb882d924
+          name: 'DataFactory IR runtime available memory'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          units: b
+          description: |
+            Integration runtime available memory, in bytes
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+          triggers:
+            -
+              uuid: 2b496e562bb54ef9856e599c4e68e373
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P2}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > {$IR_MEMORY_P3}'
+              name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}%'
+              priority: AVERAGE
+              description: 'The Integration runtime is taking too much memory'
+            -
+              uuid: df2e089b722f4bf28c4689fc4fa9f447
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P3}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > ({$IR_MEMORY_P3} + ({$IR_MEMORY_P3} * 10) )'
+              name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}Gb'
+              priority: WARNING
+              description: 'The Integration runtime is taking too much memory'
+              dependencies:
+                -
+                  name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}%'
+                  expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P2}'
+                  recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > {$IR_MEMORY_P3}'
+        -
+          uuid: a7de211e73924751a025bd73c263086a
+          name: 'DataFactory IR runtime queue duration'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAverageTaskPickupDelay,average","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          units: s
+          description: |
+            Integration runtime queue duration, in seconds
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: d048417c53e049a79efaf541362e633b
+          name: 'DataFactory IR runtime CPU utilization'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: |
+            Integration runtime CPU utilization
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+          triggers:
+            -
+              uuid: baf16dc9948844a08f76dc4a00e308ba
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)>{$IR_CPU_P2}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)<{$IR_CPU_P3}'
+              name: '[ {$AZURE_ADF_NAME} ] - DataFactory IR CPU consumption is up to {$IR_CPU_P2}%'
+              priority: AVERAGE
+              description: 'The Integration runtime is taking too much CPU'
+            -
+              uuid: fa1bb1c0af8c4ad8bb5db320e3801ad9
+              expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)>{$IR_CPU_P3}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)<{$IR_CPU_P3}'
+              name: '[ {$AZURE_ADF_NAME} ] - DataFactory IR CPU consumption is up to {$IR_CPU_P3}Gb'
+              priority: WARNING
+              description: 'The Integration runtime is taking too much CPU'
+              dependencies:
+                -
+                  name: '[ {$AZURE_ADF_NAME} ] - DataFactory IR CPU consumption is up to {$IR_CPU_P2}%'
+                  expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)>{$IR_CPU_P2}'
+                  recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeCpuPercentage,average","-t","1"],10)<{$IR_CPU_P3}'
+        -
+          uuid: bb301f4416134bc6b775cd50d471b8ed
+          name: 'DataFactory IR queue lenght'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeQueueLength,total","-t","1"]'
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Integration runtime queue
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 701fa10eaf27464d9f66157d420b94ec
+          name: 'DataFactory Pipeline Run (Cancelled)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,PipelineCancelledRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of canceled pipeline runs metrics'
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 8781418aa3d340a8825635c8c93007fc
+          name: 'DataFactory Failed activity runs metrics'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,PipelineFailedRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of Failed pipeline runs'
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+          triggers:
+            -
+              uuid: fe34b2ef54484edf987cd173f61ddc17
+              expression: 'last(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,PipelineFailedRuns,total","-t","10"])>0'
+              recovery_mode: NONE
+              name: '[ {$AZURE_ADF_NAME} ] - Failed to execute a pipeline run'
+              priority: AVERAGE
+              description: 'One or more pipelines has been failed while trying to execute. Please login on Azure Datafatctories and check author and monitor.'
+              manual_close: 'YES'
+        -
+          uuid: e705249499404c35be3bad99029f9c7c
+          name: 'DataFactory Pipeline Run (Succeed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,PipelineSucceededRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: 'Number of succeeded pipeline runs metrics'
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 9693a01bf8a3487480361e0cd704ee65
+          name: 'DataFactory Trigger (Cancelled)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,TriggerCancelledRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Cancelled Trigger Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 79556be034614e898356ce1b7380ff51
+          name: 'DataFactory Trigger (Failed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,TriggerFailedRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Failed Activity Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+        -
+          uuid: 77ada9daec75443abfb65cc30a0db3ef
+          name: 'DataFactory Trigger (Succeed)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,TriggerSucceededRuns,total","-t","10"]'
+          delay: 10m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            Succeed Activity Runs
+            
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure DataFactory'
+      macros:
+        -
+          macro: '{$AZURE_ADF_NAME}'
+          value: '{HOST.HOST}'
+          description: 'Azure DataFactory Name.'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$IR_MEMORY_P2}'
+          value: '1048576'
+          description: 'Memory available, in bytes'
+        -
+          macro: '{$IR_MEMORY_P3}'
+          value: '1073741824'
+        -
+          macro: '{$REGION}'
+    -
+      uuid: df5a84bea2384ccaa3a7f40b6b5b0e45
+      template: 'Template - Azure Inventory'
+      name: 'Template - Azure Inventory'
+      description: 'Azure. Just for inventory.'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: abf0e83d41864a248d1955d78669d59d
+          name: 'Host Name'
+          type: DEPENDENT
+          key: azure.host.name
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          description: 'Vendor Tag. Is defined at installation. If not defined, MaaS will show "NAN" instead'
+          inventory_link: NAME
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.data.[0].HOST_NAME'
+          master_item:
+            key: host.info
+        -
+          uuid: 77a80a7cd41c432095a2602588d3d116
+          name: 'Cloud provider name'
+          type: DEPENDENT
+          key: azure.host.provider
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          description: 'Vendor Tag. Is defined at installation. If not defined, MaaS will show "NAN" instead'
+          inventory_link: INSTALLER_NAME
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.data.[0].HOST_PROVIDER'
+          master_item:
+            key: host.info
+        -
+          uuid: f60d0192d6a3498da76e22573baa10f4
+          name: 'Cloud information - Azure ResourceGroup'
+          type: DEPENDENT
+          key: azure.host.resourcegroup
+          delay: '0'
+          history: 1d
+          trends: '0'
+          value_type: CHAR
+          description: 'Gets Resource Group (exclusive on Microsoft Azure)'
+          inventory_link: OOB_ROUTER
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.data.[0].RESOURCE_GROUP'
+          master_item:
+            key: host.info
+          tags:
+            -
+              tag: Application
+              value: General
+        -
+          uuid: 0e3447e551bc472e8d69ecdd959cd0f4
+          name: Vendor
+          type: DEPENDENT
+          key: azure.host.vendor
+          delay: '0'
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          description: 'Vendor Tag. Is defined at installation. If not defined, MaaS will show "NAN" instead'
+          inventory_link: VENDOR
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.data.[0].CLIENT_NAME'
+          master_item:
+            key: host.info
+        -
+          uuid: 1042d05005f04d8b9ccc9849aad71c24
+          name: 'Cloud information'
+          type: SCRIPT
+          key: host.info
+          delay: 1d
+          history: 7d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            var params = JSON.parse(value);
+            message = '{ "data":  [ { "HOST_PROVIDER": "Azure", "HOST_NAME": "' + params.hostname +  '", "CLIENT_NAME": "' + params.clientname + '", '+ '"RESOURCE_GROUP": "' + params.resourcegroup + '"} ]}'
+            return(message);
+          description: 'Vendor Tag. Is defined at installation.'
+          timeout: '30'
+          parameters:
+            -
+              name: clientname
+              value: '{$AZURE_CLIENTNAME}'
+            -
+              name: resourcegroup
+              value: '{$AZURE_RESOURCE_GROUP}'
+            -
+              name: hostname
+              value: '{$AZURE_HOSTNAME}'
+      macros:
+        -
+          macro: '{$AZURE_CLIENTNAME}'
+        -
+          macro: '{$AZURE_HOSTNAME}'
+          value: '{HOST.HOST}'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$REGION}'
+    -
+      uuid: acfb75cf80a9454a9a9372e1aa1573cf
+      template: 'Template - Azure VM'
+      name: 'Template - Azure VM'
+      description: 'Azure Virtual Macines metrics'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: 56accb92beec4a6ca3c8b407e84d4c9a
+          name: 'VM Available Memory'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Available Memory Bytes,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: b
+          description: |
+            Memory Usage 
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: 9d284aa3f05c47f1b3f3a84a9a40a487
+          name: 'VM CPU Credits Consumed'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,CPU Credits Consumed,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            CPU Credits consumed, when applicable in VM
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: 7ecc4422fc0640878d0538e2ce7b13e5
+          name: 'VM CPU Credits Remaining'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,CPU Credits Remaining,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          description: |
+            CPU Credits, when applicable in VM
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: ba5d9e9703154abdadb70210d4eb7fe6
+          name: 'VM Disk Read Usage (bytes)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Disk Read Bytes,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: b
+          description: |
+            Disk Usage by cluster (mean)
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: 39629141d87f4472a0da62d9fd17da78
+          name: 'VM Disk Read Operations/Sec'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Disk Read Operations/Sec,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: ops/sec
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: 16bd791c7f404b54a12f18afadb6c559
+          name: 'VM Disk Write Usage (bytes)'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Disk Write Bytes,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: b
+          description: |
+            Disk Usage by cluster (mean)
+            
+            https://docs.microsoft.com/pt-br/azure/azure-monitor/essentials/metrics-supported
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: 5da4280205eb45e0bbe190a6f86db8ee
+          name: 'VM Disk Write Operations/Sec'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Disk Write Operations/Sec,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: ops/sec
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: e05397a24e00426b873fb574eebd726d
+          name: 'VM Network In'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Network In Total,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: bps
+          description: 'Total Nework In'
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: b6f568ffc3504976ae02eedc65e0ab16
+          name: 'VM Network Out'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Network Out Total,total"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: bps
+          description: 'Total Nework Out'
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+        -
+          uuid: e81b216cd1014c13a8af6cf3d1871993
+          name: 'VM CPU Utilization'
+          type: EXTERNAL
+          key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_VM_NAME},{$AZURE_RESOURCE_GROUP},VM,Percentage CPU,average"]'
+          delay: 5m
+          history: 7d
+          value_type: FLOAT
+          units: '%'
+          description: 'CPU Usage in Percent'
+          tags:
+            -
+              tag: Application
+              value: 'Azure Virtual Machines'
+      macros:
+        -
+          macro: '{$AZURE_APP_ID}'
+        -
+          macro: '{$AZURE_APP_PASSWORD}'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$AZURE_SUBSCRIPTION_ID}'
+        -
+          macro: '{$AZURE_TENANT_ID}'
+        -
+          macro: '{$AZURE_VM_NAME}'
+          value: '{HOST.HOST}'
+          description: 'Name of VM on Azure'
+    -
+      uuid: 70a57a66f04e440fabae389439ca493f
+      template: 'Template - Azure VPN Gateway'
+      name: 'Template - Azure VPN Gateway'
+      description: 'Discovers Azure VPN Gateway and monitoring status for each of them'
+      groups:
+        -
+          name: Templates
+        -
+          name: Templates/Azure
+      items:
+        -
+          uuid: 83bf2cfbd7034e6384253a62882d7630
+          name: 'Azure Vpn Connection Status'
+          type: EXTERNAL
+          key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_PASSWORD}:{$AZURE_RESOURCE_GROUP}","-s","{$AZURE_VPN_NAME}"]'
+          status: DISABLED
+          valuemap:
+            name: 'Service state'
+          preprocessing:
+            -
+              type: REGEX
+              parameters:
+                - ^Connected
+                - '1'
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+      discovery_rules:
+        -
+          uuid: 38ee3fbeed2b451daa5e4c5c878a0270
+          name: 'Azure VPN Gateway discovery'
+          type: EXTERNAL
+          key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_PASSWORD}:{$AZURE_RESOURCE_GROUP}","-d"]'
+          delay: 1d
+          item_prototypes:
+            -
+              uuid: e3ce2b1232eb4798bb1c87ba5d92ad30
+              name: 'Azure Vpn Connection Status [ {#VPN_GATEWAY_NAME} ]'
+              type: EXTERNAL
+              key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_PASSWORD}:{$AZURE_RESOURCE_GROUP}","-s","{#VPN_GATEWAY_NAME}"]'
+              history: 7d
+              valuemap:
+                name: 'Service state'
+              preprocessing:
+                -
+                  type: REGEX
+                  parameters:
+                    - ^Connected
+                    - '1'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure VPN Gateway Status'
+      macros:
+        -
+          macro: '{$AZURE_APP_ID}'
+        -
+          macro: '{$AZURE_PASSWORD}'
+        -
+          macro: '{$AZURE_RESOURCE_GROUP}'
+        -
+          macro: '{$AZURE_TENANT_ID}'
+        -
+          macro: '{$AZURE_VPN_NAME}'
+          value: '{HOST.HOST}'
+      valuemaps:
+        -
+          uuid: 10c724af94d14d2fb2e58823f10adc19
+          name: 'Service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
+  triggers:
+    -
+      uuid: 094e9dfe067341cf9b023319944f6950
+      expression: '( last(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,TriggerFailedRuns,total","-t","10"])>0 ) or (last(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,PipelineCancelledRuns,total","-t","10"])>0 )'
+      recovery_mode: NONE
+      name: '[ {$AZURE_ADF_NAME} ] - Failed or Cancelled a DataFactory Trigger'
+      priority: AVERAGE
+      description: 'A Datafactory trigger has been cancelled or this execution has failed.'
+      manual_close: 'YES'
+    -
+      uuid: e7eb50614d04438bb02d097686913540
+      expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP4XX_P2}'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50'
+      name: '[ {HOST.NAME} ] - Number of 4xx errors is up to {$WEBAPP_HTTP4XX_P2} %'
+      priority: WARNING
+      description: 'Number of 5xx error codes is too high. This alert gonna be still until number of 500 is lower than 50 percent of total requests.'
+    -
+      uuid: 0cb52118b4f1439a88015ab65ea356d9
+      expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP5XX_P2}'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50'
+      name: '[ {HOST.NAME} ] - Number of 5xx errors is up to {$WEBAPP_HTTP5XX_P2} %'
+      priority: AVERAGE
+      description: 'Number of 5xx error codes is too high. This alert gonna be still until number of 500 is lower than 50 percent of total requests.'
