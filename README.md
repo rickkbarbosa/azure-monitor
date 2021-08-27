@@ -101,6 +101,15 @@ In the frontend, include the template _zabbix_template_azure.yaml_ . There will 
 
 * *AZURE CLIENT NAME* : This macro exists for Inventory Purposes. The discover will create hosts for each component detected, and add in groups "{$CLIENTNAME} - Azure/ITEM" (E. G.: ClientName - Azure/VirtualMachine) .
 
+### Regarding duplicated names ###
+
+Sometimes, you have hosts with same names, like a database and a virtual machine called "foo". Zabbix doesn'allow duplicated names. 
+The way I've found to workaround it was append suffix and prefix on hostnames. So, you'll see hosts with these names:
+
+* sql/foo
+* vm/foo
+
+In order to still make sense the names, there's a macro AZURE_xxxx_NAME, where _xxxx_  is the type of item at the macro
 
 
 ### BUY ME A COFFEE ;) 
