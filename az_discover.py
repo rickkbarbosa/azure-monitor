@@ -209,6 +209,7 @@ def azure_aks_list():
         vm_detail = {'{#AZ_AKS_NAME}': details[8],
                         '{#AZ_AKS_RESOURCEGROUP}': details[4],
                         '{#AZ_AKS_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_AKS_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         kubernetes_list.append(vm_detail)
   
