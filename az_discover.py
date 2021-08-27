@@ -80,6 +80,7 @@ def azure_vm_list():
         vm_detail = {'{#AZ_VM_NAME}': details[8],
                         '{#AZ_VM_RESOURCEGROUP}': details[4],
                         '{#AZ_VM_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_REGION}': vm.location,
                         '{#AZ_VM_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         vm_list.append(vm_detail)
@@ -99,6 +100,7 @@ def azure_df_list():
         vm_detail = {'{#AZ_ADF_NAME}': details[8],
                         '{#AZ_ADF_RESOURCEGROUP}': details[4],
                         '{#AZ_ADF_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_REGION}': df.location,
                         '{#AZ_ADF_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         df_list.append(vm_detail)
@@ -118,6 +120,7 @@ def azure_webapp_list():
         vm_detail = {'{#AZ_WEBAPP_NAME}': details[8],
                         '{#AZ_WEBAPP_RESOURCEGROUP}': details[4],
                         '{#AZ_WEBAPP_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_REGION}': web.location,
                         '{#AZ_WEBAPP_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         webapp_list.append(vm_detail)
@@ -131,12 +134,13 @@ def azure_sql_instances_list():
     discover_result = compute_client.servers.list()
     
     db_list = list()
-    for web in discover_result:
-        details = web.id.split("/")
+    for db in discover_result:
+        details = db.id.split("/")
       
         vm_detail = {'{#AZ_DBSERVER_NAME}': details[8],
                         '{#AZ_DBSERVER_RESOURCEGROUP}': details[4],
                         '{#AZ_DBSERVER_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_REGION}': db.location,
                         '{#AZ_DBSERVER_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         db_list.append(vm_detail)
@@ -187,6 +191,7 @@ def azure_connection_list():
         
             vm_detail = {'{#AZ_CONNECTION_NAME}': details[8],
                             '{#AZ_CONNECTION_RESOURCEGROUP}': details[4],
+                            '{#AZ_REGION}': connection.location,
                             '{#AZ_CONNECTION_SUBSCRIPTIONS}': details[2],
                             }
             connection_list.append(vm_detail)
@@ -209,6 +214,7 @@ def azure_aks_list():
         vm_detail = {'{#AZ_AKS_NAME}': details[8],
                         '{#AZ_AKS_RESOURCEGROUP}': details[4],
                         '{#AZ_AKS_SUBSCRIPTIONS}': details[2],
+                        '{#AZ_REGION}': kubernetes_cluster.location,
                         '{#AZ_AKS_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         kubernetes_list.append(vm_detail)
