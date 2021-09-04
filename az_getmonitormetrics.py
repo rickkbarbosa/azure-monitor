@@ -158,6 +158,7 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     # except:
     #     metrics_data = 0
 
+    client.close()
     return metrics_data
 
 ''' For menu '''
