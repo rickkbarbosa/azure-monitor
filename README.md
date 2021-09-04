@@ -8,6 +8,8 @@ You could have a Azure Service principal created and keep yout variables, for ex
 az ad sp create-for-rbac --name azure-monitor-test
 ```
 
+For additional information or do it by Azure panel, go thru [this link](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
+
 And result will be something like:
 
 ```
