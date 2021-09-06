@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/bin/python3 -W ignore
 #===============================================================================
 # IDENTIFICATION DIVISION
 #        ID SVN:   $Id$
@@ -130,14 +130,6 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
         aggregation=metric_aggregation.capitalize()
     )
 
-    # for item in metrics_data.value:
-    #    print("{} ({})".format(item.name.localized_value, item.unit.name))
-    #    for timeserie in item.timeseries:
-    #        for data in timeserie.data:
-    #            print("{}: {}".format(data.time_stamp, data.total))
-
-    #metrics_data.value[0].timeseries[0].data[1].total
-
     ''' Adjustment to print the right aggregation selected '''
     aggregation_name= str("x." + metric_aggregation.lower())
     metrics_data = metrics_data.value[0]
@@ -196,9 +188,6 @@ def main(credentials):
             az_metric_aggregation = az_metrics_options[4]
             result = get_az_metrics(resource_name=resource_name, resource_group=resource_group, resource_type=resource_type, az_metric=az_metric, metric_aggregation=az_metric_aggregation)
             print(result)
-
-
-
 
 if __name__ == '__main__':
     global subscription_id

@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-09-06T14:46:54Z'
+  date: '2021-09-06T19:08:41Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -27,19 +27,26 @@ zabbix_export:
           uuid: f5cc3cad81cb46a497a2f5aa87f59dc8
           name: 'Azure APP Gateway discovery'
           type: EXTERNAL
-          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connections","app_gateway"]'
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connection","app_gateway"]'
           delay: 1d
           status: DISABLED
           description: 'Application Gateway Discovery'
           item_prototypes:
             -
               uuid: c8bf3362c4c447fc950d9eab496d0dde
-              name: 'AZ App Gateway -  Total Time [ {#AZ_CONNECTION_NAME} ]'
+              name: 'AZ App Gateway -  Total Time [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
               type: EXTERNAL
-              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "applicationgateways/{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,ApplicationGatewayTotalTime,average"]'
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,ApplicationGatewayTotalTime,average"]'
               history: 7d
-              units: s
+              value_type: FLOAT
+              units: ms
               description: 'Average time that it takes for a request to be processed and its response to be sent. This is calculated as average of the interval from the time when Application Gateway receives the first byte of an HTTP request to the time when the response send operation finishes. It''s important to note that this usually includes the Application Gateway processing time, time that the request and response packets are traveling over the network and the time the backend server took to respond.'
+              preprocessing:
+                -
+                  type: REGEX
+                  parameters:
+                    - '[0-9].+'
+                    - \0
               tags:
                 -
                   tag: Application
@@ -48,7 +55,7 @@ zabbix_export:
           uuid: ed971eec2bb84e36b51d020e9b04640d
           name: 'Azure VPN Gateway discovery'
           type: EXTERNAL
-          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connections","vpn_gateway"]'
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connection","vpn_gateway"]'
           delay: 1d
           item_prototypes:
             -
@@ -75,10 +82,17 @@ zabbix_export:
               uuid: f60d4bd8650c48f7a8adb2d5c971a525
               name: 'AZ VPN Gateway - Bits In/sec [ {#AZ_CONNECTION_NAME} ]'
               type: EXTERNAL
-              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "connections/{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsInPerSecond,average"]'
-              delay: 5m
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "connections/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BitsInPerSecond,average","-t","120"]'
+              delay: 2h
               history: 7d
+              value_type: FLOAT
               units: bps
+              preprocessing:
+                -
+                  type: REGEX
+                  parameters:
+                    - '[0-9].+'
+                    - \0
               tags:
                 -
                   tag: Application
@@ -87,10 +101,17 @@ zabbix_export:
               uuid: 3be0256cdab24a97a05be7cc6974efe8
               name: 'AZ VPN Gateway - Bits Out/sec [ {#AZ_CONNECTION_NAME} ]'
               type: EXTERNAL
-              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "connections/{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsOutPerSecond,average"]'
-              delay: 5m
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "connections/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BitsOutPerSecond,average","-t","120"]'
+              delay: 2h
               history: 7d
+              value_type: FLOAT
               units: bps
+              preprocessing:
+                -
+                  type: REGEX
+                  parameters:
+                    - '[0-9].+'
+                    - \0
               tags:
                 -
                   tag: Application

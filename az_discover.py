@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/bin/python3 -W ignore
 #===============================================================================
 # IDENTIFICATION DIVISION
 #        ID SVN:   $Id$
@@ -104,7 +104,7 @@ def azure_df_list():
                         '{#AZ_ADF_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         df_list.append(vm_detail)
-  
+    
     print(json.dumps({"data": df_list}, indent=4))
 
 def azure_webapp_list():
@@ -124,7 +124,7 @@ def azure_webapp_list():
                         '{#AZ_WEBAPP_GROUPNAME}': "{} - Azure".format(options.groupname)
                         }
         webapp_list.append(vm_detail)
-  
+    
     print(json.dumps({"data": webapp_list}, indent=4))
 
 def azure_sql_instances_list():
@@ -167,9 +167,10 @@ def azure_databases_list(instance_name, resource_group):
                         }
         db_list.append(vm_detail)
   
+    compute_client.close()
     print(json.dumps({"data": db_list}, indent=4))
     
-def azure_connection_list(connection):
+def azure_connection_list(connection_type):
     from azure.mgmt.resource import ResourceManagementClient
     from azure.mgmt.network import NetworkManagementClient
     
@@ -187,7 +188,7 @@ def azure_connection_list(connection):
         ''' Then, start a conection research, once per resource group '''
 
         ''' Discovers Application Gateway '''
-        if (connection == "app_gateway" ):
+        if (connection_type == "app_gateway" ):
             discover_result = compute_client.application_gateways.list(resource_group_name=rg_name)
         else:
             ''' Discovers VPN Gateway '''
@@ -196,13 +197,14 @@ def azure_connection_list(connection):
         for connection in discover_result:
             details = connection.id.split("/")
         
-            vm_detail = {'{#AZ_CONN ECTION_NAME}': details[8],
+            vm_detail = {'{#AZ_CONNECTION_NAME}': details[8],
                             '{#AZ_CONNECTION_RESOURCEGROUP}': details[4],
                             '{#AZ_REGION}': connection.location,
                             '{#AZ_CONNECTION_SUBSCRIPTIONS}': details[2],
                             }
             connection_list.append(vm_detail)
-  
+    
+    compute_client.close()
     print(json.dumps({"data": connection_list}, indent=4))
 
 def azure_aks_list():
@@ -226,6 +228,7 @@ def azure_aks_list():
                         }
         kubernetes_list.append(vm_detail)
   
+    compute_client.close()
     print(json.dumps({"data": kubernetes_list}, indent=4))
 
 ''' For menu '''
@@ -240,7 +243,7 @@ def main(credentials):
     
     if (options.az_connections):
         az_connections_options = ''.join(str(e) for e in options.az_connections)
-        azure_connection_list(connection=az_connections_options)
+        azure_connection_list(connection_type=az_connections_options)
 
     if (options.az_vm):
         azure_vm_list()
