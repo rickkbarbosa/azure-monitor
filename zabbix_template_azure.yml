@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-08-27T21:13:38Z'
+  date: '2021-09-06T14:46:54Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -24,15 +24,36 @@ zabbix_export:
           name: Templates/Azure
       discovery_rules:
         -
+          uuid: f5cc3cad81cb46a497a2f5aa87f59dc8
+          name: 'Azure APP Gateway discovery'
+          type: EXTERNAL
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connections","app_gateway"]'
+          delay: 1d
+          status: DISABLED
+          description: 'Application Gateway Discovery'
+          item_prototypes:
+            -
+              uuid: c8bf3362c4c447fc950d9eab496d0dde
+              name: 'AZ App Gateway -  Total Time [ {#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "applicationgateways/{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,ApplicationGatewayTotalTime,average"]'
+              history: 7d
+              units: s
+              description: 'Average time that it takes for a request to be processed and its response to be sent. This is calculated as average of the interval from the time when Application Gateway receives the first byte of an HTTP request to the time when the response send operation finishes. It''s important to note that this usually includes the Application Gateway processing time, time that the request and response packets are traveling over the network and the time the backend server took to respond.'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+        -
           uuid: ed971eec2bb84e36b51d020e9b04640d
           name: 'Azure VPN Gateway discovery'
           type: EXTERNAL
-          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connections"]'
+          key: 'az_discovery.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}","--connections","vpn_gateway"]'
           delay: 1d
           item_prototypes:
             -
               uuid: f8c341ba419d4a7c98b2d1896db450b8
-              name: 'Azure Vpn Connection Status [ {#AZ_CONNECTION_NAME} ]'
+              name: 'Azure Vpn Gateway Status [ {#AZ_CONNECTION_NAME} ]'
               type: EXTERNAL
               key: 'azure_monitor_vpn.sh["-c","{$AZURE_TENANT_ID}:{$AZURE_APP_ID}:{$AZURE_APP_PASSWORD}:{#AZ_CONNECTION_RESOURCEGROUP}","-s","{#AZ_CONNECTION_NAME}"]'
               history: 7d
@@ -49,31 +70,31 @@ zabbix_export:
               tags:
                 -
                   tag: Application
-                  value: 'Azure Connection'
+                  value: 'AZ VPN Gateway'
             -
               uuid: f60d4bd8650c48f7a8adb2d5c971a525
-              name: 'AZ Connection - Bits In/sec [ {#AZ_CONNECTION_NAME} ]'
+              name: 'AZ VPN Gateway - Bits In/sec [ {#AZ_CONNECTION_NAME} ]'
               type: EXTERNAL
-              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsInPerSecond,average"]'
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "connections/{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsInPerSecond,average"]'
               delay: 5m
               history: 7d
               units: bps
               tags:
                 -
                   tag: Application
-                  value: 'Azure Connection'
+                  value: 'Azure Connection VPNGw'
             -
               uuid: 3be0256cdab24a97a05be7cc6974efe8
-              name: 'AZ Connection - Bits Out/sec [ {#AZ_CONNECTION_NAME} ]'
+              name: 'AZ VPN Gateway - Bits Out/sec [ {#AZ_CONNECTION_NAME} ]'
               type: EXTERNAL
-              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsOutPerSecond,average"]'
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "connections/{#AZ_CONNECTION_NAME},{$AZURE_RESOURCE_GROUP},CONNECTION,BitsOutPerSecond,average"]'
               delay: 5m
               history: 7d
               units: bps
               tags:
                 -
                   tag: Application
-                  value: 'Azure Connection'
+                  value: 'AZ VPN Gateway'
         -
           uuid: 4d65be707ad8474d9b6c98b8dda978e2
           name: 'Azure Kubernetes discovery'
@@ -1041,7 +1062,7 @@ zabbix_export:
               expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P2}'
               recovery_mode: RECOVERY_EXPRESSION
               recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > {$IR_MEMORY_P3}'
-              name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}%'
+              name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}Gb'
               priority: AVERAGE
               description: 'The Integration runtime is taking too much memory'
             -
@@ -1054,7 +1075,7 @@ zabbix_export:
               description: 'The Integration runtime is taking too much memory'
               dependencies:
                 -
-                  name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}%'
+                  name: '[ {$AZURE_ADF_NAME} ] - DataFactory Integration Runtime memory is below {$IR_MEMORY_P2}Gb'
                   expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m)<{$IR_MEMORY_P2}'
                   recovery_expression: 'avg(/Template - Azure DataFactory/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_ADF_NAME},{$AZURE_RESOURCE_GROUP},ADF,IntegrationRuntimeAvailableMemory,average","-t","1"],5m) > {$IR_MEMORY_P3}'
         -

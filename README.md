@@ -55,7 +55,8 @@ _type_: Azure Components granted by this script. :
 * VM: Virtual Machines
 * WEB: App WebServices
 * SQL: Azure databases
-* CONNECTION: Azur connections
+* CONNECTION: Azure connections [app_gateway or vpn_gateway]
+
 
 
 _aggregation_ : metric aggregation, depends of metric

@@ -35,7 +35,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-C", "--credentials", dest="az_credentials", nargs=1, help="Declare AZ credentials [tenant_id,app_id,app_password,subscription_id]")
 parser.add_argument("-G", "--groupname", dest="groupname", help="Maas Groupname")
 parser.add_argument("--aks", dest="az_aks", help="AKS Clusters", action="store_true")
-parser.add_argument("--connections", dest="az_connections", help="VPN Connections", action="store_true")
+parser.add_argument("--connections", dest="az_connections", help="VPN Connections")
 parser.add_argument("--virtualmachine", dest="az_vm", help="List VMs", action="store_true")
 parser.add_argument("--datafactory", dest="az_datafactory", help="List DataFactory", action="store_true")
 parser.add_argument("--sql", dest="az_sql", help="SQL Servers", action="store_true")
@@ -169,7 +169,7 @@ def azure_databases_list(instance_name, resource_group):
   
     print(json.dumps({"data": db_list}, indent=4))
     
-def azure_connection_list():
+def azure_connection_list(connection):
     from azure.mgmt.resource import ResourceManagementClient
     from azure.mgmt.network import NetworkManagementClient
     
@@ -185,11 +185,18 @@ def azure_connection_list():
         rg_name = rg.id.split("/")[4]
 
         ''' Then, start a conection research, once per resource group '''
-        discover_result = compute_client.virtual_network_gateway_connections.list(resource_group_name=rg_name)
+
+        ''' Discovers Application Gateway '''
+        if (connection == "app_gateway" ):
+            discover_result = compute_client.application_gateways.list(resource_group_name=rg_name)
+        else:
+            ''' Discovers VPN Gateway '''
+            discover_result = compute_client.virtual_network_gateway_connections.list(resource_group_name=rg_name)
+
         for connection in discover_result:
             details = connection.id.split("/")
         
-            vm_detail = {'{#AZ_CONNECTION_NAME}': details[8],
+            vm_detail = {'{#AZ_CONN ECTION_NAME}': details[8],
                             '{#AZ_CONNECTION_RESOURCEGROUP}': details[4],
                             '{#AZ_REGION}': connection.location,
                             '{#AZ_CONNECTION_SUBSCRIPTIONS}': details[2],
@@ -232,7 +239,8 @@ def main(credentials):
         azure_df_list()
     
     if (options.az_connections):
-        azure_connection_list()
+        az_connections_options = ''.join(str(e) for e in options.az_connections)
+        azure_connection_list(connection=az_connections_options)
 
     if (options.az_vm):
         azure_vm_list()
