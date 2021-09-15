@@ -8,6 +8,18 @@ You could have a Azure Service principal created and keep yout variables, for ex
 az ad sp create-for-rbac --name azure-monitor-test
 ```
 
+Maybe you have more than one subscription and would like to use the same SP for both. So try run the comand as presented below:
+
+``` 
+az ad sp create-for-rbac --name logicalis-maas-azure-monitor \
+    --role Reader \
+    --scopes /subscriptions/<subscription-1> \
+        /subscriptions/<subscription-2> \
+        /subscriptions/<subscription-3>
+
+```
+
+
 For additional information or do it by Azure panel, go thru [this link](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
 
 And result will be something like:

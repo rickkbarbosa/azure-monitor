@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-09-06T19:08:41Z'
+  date: '2021-09-06T19:59:39Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -51,6 +51,149 @@ zabbix_export:
                 -
                   tag: Application
                   value: 'Azure App Gateway'
+            -
+              uuid: b95590ca474f4e739e129696055aa0a6
+              name: 'AZ App Gateway - Backend Connect Time [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BackendConnectTime,average"]'
+              history: 7d
+              value_type: FLOAT
+              units: ms
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: a54f283963114898b180666b3ac74f82
+              name: 'AZ App Gateway - Time to First Byte [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BackendFirstByteResponseTime,average"]'
+              history: 7d
+              value_type: FLOAT
+              units: ms
+              description: 'Time to First Byte'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: d0f4024087b749da9a575b31cef1d4b7
+              name: 'AZ App Gateway - Time to Last Byte [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BackendLastByteResponseTime,average"]'
+              history: 7d
+              value_type: FLOAT
+              units: ms
+              description: 'Time to First Byte'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: c5f8f7fb3c3c4aeda654c795be12c7e7
+              name: 'AZ App Gateway - Bytes Received [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BytesReceived,total"]'
+              history: 7d
+              value_type: FLOAT
+              units: b
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: e32917dd0034490ab0cf5dbfe72ad86e
+              name: 'AZ App Gateway - Bytes Sent [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,BytesSent,total"]'
+              history: 7d
+              value_type: FLOAT
+              units: b
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: ed8eb74f9e7f4827979d7ecdc0cb4215
+              name: 'AZ App Gateway - Capacity Units [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,CapacityUnits,total"]'
+              history: 7d
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: b3c92e4390bf43838b6dc017fabcac94
+              name: 'AZ App Gateway - Requests (Failed) [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,FailedRequests,total"]'
+              history: 7d
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: 938ef595987f41ca9dc32f6655e477ee
+              name: 'AZ App Gateway -  Healty Host Count [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,HealthyHostCount,average"]'
+              history: 7d
+              value_type: FLOAT
+              description: 'Healthy Host Count'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: 06d4a69bff574dafb2926bacb145b7a8
+              name: 'AZ App Gateway - Requests [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,TotalRequests,total"]'
+              history: 7d
+              value_type: FLOAT
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+            -
+              uuid: cec6a95d48264da9a22d57b750f5bb76
+              name: 'AZ App Gateway -  UNHealty Host Count [ applicationgateways/{#AZ_CONNECTION_NAME} ]'
+              type: EXTERNAL
+              key: 'az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,UnhealthyHostCount,average"]'
+              history: 7d
+              value_type: FLOAT
+              description: 'UnHealthy Host Count'
+              tags:
+                -
+                  tag: Application
+                  value: 'Azure App Gateway'
+          trigger_prototypes:
+            -
+              uuid: 9333bbeedaf64c8282857e510703abc9
+              expression: '(( avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,FailedRequests,total"],#5) / last(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,TotalRequests,total"]) ) * 100 ) > {$AZ_APPGW_REQUESTS}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: '(( avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,FailedRequests,total"],#5) / last(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,TotalRequests,total"]) ) * 100 ) < ( {$AZ_APPGW_REQUESTS} + 20 )'
+              name: '[ {HOST.NAME} ] - Too Much Failed Requests [ {#AZ_CONNECTION_NAME} ]'
+              priority: AVERAGE
+              description: |
+                The APP Gateway {#AZ_CONNECTION_NAME} has detected a number of Failed Requests up to {$AZ_APPGW_REQUESTS}.
+                This alert stills until values be less than 20 percent of triggered.
+              dependencies:
+                -
+                  name: '[ {HOST.NAME} ] - Unhealty Host Count for APP Gateway [ {#AZ_CONNECTION_NAME} ]'
+                  expression: 'avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,UnhealthyHostCount,average"],#5) > avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,HealthyHostCount,average"],#5)'
+                  recovery_expression: 'avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,UnhealthyHostCount,average"],#5) = 0'
+            -
+              uuid: 159d6a7df0d74f5883094f8a58f9739e
+              expression: 'avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,UnhealthyHostCount,average"],#5) > avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,HealthyHostCount,average"],#5)'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'avg(/Template - Azure - Itens discovery/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m","applicationgateways/{#AZ_CONNECTION_NAME},{#AZ_CONNECTION_RESOURCEGROUP},CONNECTION,UnhealthyHostCount,average"],#5) = 0'
+              name: '[ {HOST.NAME} ] - Unhealty Host Count for APP Gateway [ {#AZ_CONNECTION_NAME} ]'
+              priority: HIGH
+              description: 'The APP Gateway {#AZ_CONNECTION_NAME} has not been passed on Health test configured on Azure Portal. Please check APP Gateway Health probes.'
         -
           uuid: ed971eec2bb84e36b51d020e9b04640d
           name: 'Azure VPN Gateway discovery'
@@ -379,6 +522,10 @@ zabbix_export:
           macro: '{$AZURE_CLIENTNAME}'
           value: ClientName
           description: 'Client Name. Discover purposes'
+        -
+          macro: '{$AZ_APPGW_REQUESTS}'
+          value: '40'
+          description: 'Failed requests until trigger it, in percentage'
       valuemaps:
         -
           uuid: 94c59759897942ef84a0a69323cddf44
