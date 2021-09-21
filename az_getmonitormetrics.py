@@ -14,8 +14,8 @@
 #          TODO:  ---
 #        AUTHOR:  Ricardo Barbosa, rickkbarbosa@live.com
 #       COMPANY:  ---
-#       VERSION:  1.0
-#       CREATED:  2021-Ago-17 10:53 AM BRT
+#       VERSION:  1.5
+#       CREATED:  2021-Sep-20 11:02 PM BRT
 #      REVISION:  ---
 #===============================================================================
 
@@ -25,11 +25,8 @@
 import os, sys
 import argparse
 import datetime
-# from azure.mgmt.monitor import MonitorManagementClient
-# from azure.common.credentials import ServicePrincipalCredentials
 import pandas as pd
 import requests, json
-from queue import Queue
 from threading import Thread
 import os
 
@@ -62,7 +59,6 @@ def get_credentials(credentials):
     az_password = credentials[2]
     subscription_id = credentials[3]
 
-    #global api_token
     token_url = "https://{}/{}/oauth2/token".format(azure_token_url, az_tenant_id)
 
     ''' Append needed headers to Login '''
@@ -116,8 +112,6 @@ def azmonitor_available_metrics(resource_name, resource_group, resource_type):
 
 
 def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metric_aggregation):
-    # if api_new_token is None:
-    #     api_new_token = get_credentials(credentials)[0]
     ''' Set right date format to url '''
     global timeto, timetill 
     t_range = (timetill - timeto).seconds
@@ -136,13 +130,6 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     
     ''' Aggregations: Total, Sum, Count, Minimum, Maximum, Average'''
     ''' https://docs.microsoft.com/en-us/azure/azure-monitor/essentials/metrics-aggregation-explained '''
-
-
-    ''' Adjustment on aggregation values '''
-    # if t_range > 3600:
-    #     default_interval = "PT1H"
-    # else:
-    #     default_interval = "PT1M"
 
     ''' URL prepare '''
     api_new_token = get_credentials(credentials)[0]
@@ -173,8 +160,31 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
         except:
             metrics_data = df.median()[aggregation_name]
 
-    return metrics_data
+    print(metrics_data)
 
+
+class QueryWorker(Thread):
+
+    def __init__(self, queue):
+        Thread.__init__(self)
+        self.queue = queue
+
+    def run(self):
+        while True:
+            # Get the work from the queue and expand the tuple
+            az_metrics_options = self.queue.get()
+            resource_name = az_metrics_options[0]
+            resource_group = az_metrics_options[1]
+            resource_type = az_metrics_options[2]
+            az_metric = az_metrics_options[3]
+            az_metric_aggregation = az_metrics_options[4]
+                        
+            try:
+                get_az_metrics(resource_name=resource_name, resource_group=resource_group,
+                                    resource_type=resource_type, az_metric=az_metric,
+                                    metric_aggregation=az_metric_aggregation)
+            finally:
+                self.queue.task_done()
 
 ''' For menu '''
 def main(credentials):
@@ -210,15 +220,15 @@ def main(credentials):
             ''' When just getting a single value ... '''
             az_metric = az_metrics_options[3]
             az_metric_aggregation = az_metrics_options[4]
-            result = get_az_metrics(resource_name=resource_name, resource_group=resource_group,
+            
+            get_az_metrics(resource_name=resource_name, resource_group=resource_group,
                                     resource_type=resource_type, az_metric=az_metric,
                                     metric_aggregation=az_metric_aggregation)
-            print(result)
 
 if __name__ == '__main__':
     global subscription_id
     #global api_new_token
-
+    
     #''' Invoke credentials based on AZ Service Principal. Default is try to get system environment '''
     if (options.az_credentials != None):
         az_credentials_options = ''.join(str(e) for e in options.az_credentials)
