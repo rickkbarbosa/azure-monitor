@@ -27,7 +27,6 @@ import argparse
 import datetime
 import pandas as pd
 import requests, json
-from threading import Thread
 import os
 
 parser = argparse.ArgumentParser()
@@ -120,7 +119,7 @@ def azmonitor_available_metrics(resource_name, resource_group, resource_type):
 def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metric_aggregation):
     ''' Set right date format to url '''
     global timeto, timetill 
-    t_range = (timetill - timeto).seconds
+    # t_range = (timetill - timeto).seconds
     timeto = timeto.strftime("%Y-%m-%dT%H:%M:%S")
     timetill = timetill.strftime("%Y-%m-%dT%H:%M:%S")
     
@@ -168,30 +167,6 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
 
     print(metrics_data)
 
-
-class QueryWorker(Thread):
-
-    def __init__(self, queue):
-        Thread.__init__(self)
-        self.queue = queue
-
-    def run(self):
-        while True:
-            # Get the work from the queue and expand the tuple
-            az_metrics_options = self.queue.get()
-            resource_name = az_metrics_options[0]
-            resource_group = az_metrics_options[1]
-            resource_type = az_metrics_options[2]
-            az_metric = az_metrics_options[3]
-            az_metric_aggregation = az_metrics_options[4]
-                        
-            try:
-                get_az_metrics(resource_name=resource_name, resource_group=resource_group,
-                                    resource_type=resource_type, az_metric=az_metric,
-                                    metric_aggregation=az_metric_aggregation)
-            finally:
-                self.queue.task_done()
-
 ''' For menu '''
 def main(credentials):
     ''' Limit timerange - default is 60 seconds'''
@@ -202,7 +177,7 @@ def main(credentials):
     else:
         metrics_timerange()
 
-    get_credentials(credentials=credentials)
+    #get_credentials(credentials=credentials)
     if (options.az_metric_list != None or options.az_metrics != None ):
         #AZ Metrics
         try:
