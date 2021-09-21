@@ -103,12 +103,18 @@ def azmonitor_available_metrics(resource_name, resource_group, resource_type):
         "providers/{}/{}"
     ).format(subscription_id, resource_group, resource_type_list[resource_type],  resource_name)
 
-    for metric in client.metric_definitions.list(resource_id):
-        print("{}: id={}, unit={}".format(
-            metric.name.localized_value,
-            metric.name.value,
-            metric.unit
-        ))
+    ''' Declare the URL'''
+    api_url = "https://{}/{}/providers/Microsoft.Insights/metrics?api-version=2018-01-01".format(monitoring_url, resource_id)
+
+    ''' URL prepare '''
+    api_new_token = get_credentials(credentials)[0]
+    headers = {}
+    headers['Content-Type'] = "application/json" 
+    headers['Authorization'] = "Bearer {}".format(api_new_token)
+    headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" 
+
+    response = requests.get(api_url, headers=headers, timeout=10)
+    print(response.text)
 
 
 def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metric_aggregation):
