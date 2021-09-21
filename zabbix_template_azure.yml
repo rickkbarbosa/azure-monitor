@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2021-09-06T19:59:39Z'
+  date: '2021-09-21T16:18:38Z'
   groups:
     -
       uuid: f2481361f99448eea617b7b1d4765566
@@ -298,11 +298,15 @@ zabbix_export:
                   value: '{#AZ_AKS_RESOURCEGROUP}'
               tags:
                 -
+                  tag: AzureResourceGroup
+                  value: '{#AZ_AKS_RESOURCEGROUP}'
+                -
                   tag: AzureSubscription
                   value: '{$AZURE_SUBSCRIPTION_ID}'
                 -
                   tag: Client
                   value: '{$AZURE_CLIENTNAME}'
+              inventory_mode: AUTOMATIC
         -
           uuid: 4d1d9ab3e1794efcaae0cccad63e0756
           name: 'Azure DataFactory discovery'
@@ -341,11 +345,15 @@ zabbix_export:
                   value: '{#AZ_ADF_RESOURCEGROUP}'
               tags:
                 -
+                  tag: AzureResourceGroup
+                  value: '{#AZ_ADF_RESOURCEGROUP}'
+                -
                   tag: AzureSubscription
                   value: '{$AZURE_SUBSCRIPTION_ID}'
                 -
                   tag: Client
                   value: '{$AZURE_CLIENTNAME}'
+              inventory_mode: AUTOMATIC
         -
           uuid: 96435facc0aa4fd186dab423b5d62fa2
           name: 'Azure Database Instances discovery'
@@ -385,11 +393,15 @@ zabbix_export:
                   value: '{#AZ_DBSERVER_RESOURCEGROUP}'
               tags:
                 -
+                  tag: AzureResourceGroup
+                  value: '{#AZ_DBSERVER_RESOURCEGROUP}'
+                -
                   tag: AzureSubscription
                   value: '{$AZURE_SUBSCRIPTION_ID}'
                 -
                   tag: Client
                   value: '{$AZURE_CLIENTNAME}'
+              inventory_mode: AUTOMATIC
         -
           uuid: cafeb89be05c43709cb5483a9b073a63
           name: 'Azure Virtual Machine discovery'
@@ -426,11 +438,15 @@ zabbix_export:
                   value: '{#AZ_VM_NAME}'
               tags:
                 -
+                  tag: AzureResourceGroup
+                  value: '{#AZ_VM_RESOURCEGROUP}'
+                -
                   tag: AzureSubscription
                   value: '{$AZURE_SUBSCRIPTION_ID}'
                 -
                   tag: Client
                   value: '{$AZURE_CLIENTNAME}'
+              inventory_mode: AUTOMATIC
         -
           uuid: 03443a2e57ca41169dc0b7744ebbeb3e
           name: 'Azure WebApp discovery'
@@ -469,11 +485,15 @@ zabbix_export:
                   value: '{#AZ_WEBAPP_NAME}'
               tags:
                 -
+                  tag: AzureResourceGroup
+                  value: '{#AZ_WEBAPP_RESOURCEGROUP}'
+                -
                   tag: AzureSubscription
                   value: '{$AZURE_SUBSCRIPTION_ID}'
                 -
                   tag: Client
                   value: '{$AZURE_CLIENTNAME}'
+              inventory_mode: AUTOMATIC
         -
           uuid: 81ef25e004214c69b6fc57604e7f08cc
           name: 'Azure API Management discovery'
@@ -512,11 +532,15 @@ zabbix_export:
                   description: 'Azure Item Resource Group'
               tags:
                 -
+                  tag: AzureResourceGroup
+                  value: '{#AZ_APIM_RESOURCEGROUP}'
+                -
                   tag: AzureSubscription
                   value: '{$AZURE_SUBSCRIPTION_ID}'
                 -
                   tag: Client
                   value: '{$AZURE_CLIENTNAME}'
+              inventory_mode: AUTOMATIC
       macros:
         -
           macro: '{$AZURE_CLIENTNAME}'
@@ -1547,7 +1571,7 @@ zabbix_export:
           value_type: TEXT
           params: |
             var params = JSON.parse(value);
-            message = '{ "data":  [ { "HOST_PROVIDER": "Azure", "HOST_NAME": "' + params.hostname +  '", "CLIENT_NAME": "' + params.clientname + '", ' + '", "REGION": "' + params.region + '", ' + '"RESOURCE_GROUP": "' + params.resourcegroup + '"} ]}'
+            message = '{ "data":  [ { "HOST_PROVIDER": "Azure", "HOST_NAME": "' + params.hostname +  '", "CLIENT_NAME": "' + params.clientname + '", ' + '"REGION": "' + params.region + '", ' + '"RESOURCE_GROUP": "' + params.resourcegroup + '"} ]}'
             return(message);
           timeout: '30'
           parameters:
@@ -1838,17 +1862,31 @@ zabbix_export:
       manual_close: 'YES'
     -
       uuid: e7eb50614d04438bb02d097686913540
-      expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP4XX_P2}'
+      expression: |
+        (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],#3)>1)
+        and
+        ( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP4XX_P2}
       recovery_mode: RECOVERY_EXPRESSION
-      recovery_expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50'
+      recovery_expression: |
+        ( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http4xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50
+        or
+         ( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],#3) <= 1 )
       name: '[ {HOST.NAME} ] - Number of 4xx errors is up to {$WEBAPP_HTTP4XX_P2} %'
       priority: WARNING
       description: 'Number of 5xx error codes is too high. This alert gonna be still until number of 500 is lower than 50 percent of total requests.'
     -
       uuid: 0cb52118b4f1439a88015ab65ea356d9
-      expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP5XX_P2}'
+      expression: |
+        ( 
+        avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],#3)> 1 )
+        and
+        ( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) > {$WEBAPP_HTTP5XX_P2}
       recovery_mode: RECOVERY_EXPRESSION
-      recovery_expression: '( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50'
+      recovery_expression: |
+        ( (( avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Http5xx,total"],3) ) / (avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],3) ) ) * 100 ) < 50
+        or
+        ( 
+        avg(/Template - Azure App Services/az_getmonitormetrics.py["-C","{$AZURE_TENANT_ID},{$AZURE_APP_ID},{$AZURE_APP_PASSWORD},{$AZURE_SUBSCRIPTION_ID}", "-m", "{$AZURE_WEBAPP_NAME},{$AZURE_RESOURCE_GROUP},WEB,Requests,total"],#3)<= 1)
       name: '[ {HOST.NAME} ] - Number of 5xx errors is up to {$WEBAPP_HTTP5XX_P2} %'
       priority: AVERAGE
       description: 'Number of 5xx error codes is too high. This alert gonna be still until number of 500 is lower than 50 percent of total requests.'

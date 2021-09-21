@@ -112,7 +112,7 @@ def azmonitor_available_metrics(resource_name, resource_group, resource_type):
     headers['Authorization'] = "Bearer {}".format(api_new_token)
     headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" 
 
-    response = requests.get(api_url, headers=headers, timeout=10)
+    response = requests.get(api_url, headers=headers, timeout=15)
     print(response.text)
 
 
@@ -143,10 +143,10 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
     headers['Authorization'] = "Bearer {}".format(api_new_token)
     headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" 
 
-    response = requests.get(api_url, headers=headers, timeout=10)
+    response = requests.get(api_url, headers=headers, timeout=15)
     metrics_data = json.loads(response.text)
+    print(metrics_data)
     metrics_data = metrics_data['value'][0]['timeseries'][0]['data']
-
     # ''' Adjustment to print the right aggregation selected '''
     aggregation_name= metric_aggregation.lower()
     df = pd.DataFrame(metrics_data)
@@ -154,21 +154,24 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
 
     ''' Metrics involving API Management looks better using sum instead mean '''
     if ( metric_aggregation.lower() == "minimum"):
-        metrics_data = df.min()[aggregation_name]
+        metrics_data = df.min()['average']
     elif ( metric_aggregation.lower() == "maximum" ):
-        metrics_data = df.max()[aggregation_name]
+        metrics_data = df.max()['average']
     elif ( metric_aggregation.lower() == "total" or metric_aggregation.lower() == "count" ):
-        metrics_data = df.sum()[aggregation_name]
+        try:
+            metrics_data = df.sum()[aggregation_name]
+        except:
+            metrics_data = df.sum()['average']
     else:
         try:
             metrics_data = df.mean()[aggregation_name]
         except:
-            metrics_data = df.median()[aggregation_name]
+            metrics_data = df.median()['average']
 
     print(metrics_data)
 
 ''' For menu '''
-def main(credentials):
+def main():
     ''' Limit timerange - default is 60 seconds'''
     if (options.az_timerange != None ):
         timerange = ''.join(str(e) for e in options.az_timerange)
@@ -222,4 +225,4 @@ if __name__ == '__main__':
         subscription_id = os.environ['AZ_SUBSCRIPTION_ID']
         credentials = az_tenant_id, az_app_id, az_password, subscription_id
     ''' Open the party '''
-    main(credentials=credentials)
+    main()
