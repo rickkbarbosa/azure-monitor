@@ -145,7 +145,6 @@ def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metr
 
     response = requests.get(api_url, headers=headers, timeout=15)
     metrics_data = json.loads(response.text)
-    print(metrics_data)
     metrics_data = metrics_data['value'][0]['timeseries'][0]['data']
     # ''' Adjustment to print the right aggregation selected '''
     aggregation_name= metric_aggregation.lower()
