@@ -95,6 +95,22 @@ def metrics_timerange(minutes=5):
 
 #List wich metrics is available for a Azure resource
 def azmonitor_available_metrics(resource_name, resource_group, resource_type):
+    from azure.mgmt.monitor import MonitorManagementClient
+    from azure.common.credentials import ServicePrincipalCredentials        
+    ''' Starting credential login '''
+    credentials = ServicePrincipalCredentials(
+        client_id = az_app_id,
+        secret = az_password,
+        tenant = az_tenant_id
+    )
+
+    #Conection itself
+    global client
+    client = MonitorManagementClient(
+        credentials,
+        subscription_id
+    )
+
     ''' Identify the item '''
     resource_id = (
         "subscriptions/{}/"
@@ -102,18 +118,12 @@ def azmonitor_available_metrics(resource_name, resource_group, resource_type):
         "providers/{}/{}"
     ).format(subscription_id, resource_group, resource_type_list[resource_type],  resource_name)
 
-    ''' Declare the URL'''
-    api_url = "https://{}/{}/providers/Microsoft.Insights/metrics?api-version=2018-01-01".format(monitoring_url, resource_id)
-
-    ''' URL prepare '''
-    api_new_token = get_credentials(credentials)[0]
-    headers = {}
-    headers['Content-Type'] = "application/json" 
-    headers['Authorization'] = "Bearer {}".format(api_new_token)
-    headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36" 
-
-    response = requests.get(api_url, headers=headers, timeout=15)
-    print(response.text)
+    for metric in client.metric_definitions.list(resource_id):
+        print("{}: id={}, unit={}".format(
+            metric.name.localized_value,
+            metric.name.value,
+            metric.unit
+        ))
 
 
 def get_az_metrics(resource_name, resource_group, resource_type, az_metric, metric_aggregation):
