@@ -11,7 +11,7 @@ az ad sp create-for-rbac --name azure-monitor-test
 Maybe you have more than one subscription and would like to use the same SP for both. So try run the comand as presented below:
 
 ``` 
-az ad sp create-for-rbac --name logicalis-maas-azure-monitor \
+az ad sp create-for-rbac --name client-azure-monitor \
     --role Reader \
     --scopes /subscriptions/<subscription-1> \
         /subscriptions/<subscription-2> \
